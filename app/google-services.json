@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "609676131740",
+    "project_id": "gladiator-project-database",
+    "storage_bucket": "gladiator-project-database.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:609676131740:android:5727332baa27d9776e5c59",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM7sMOoPPLAOWuXmx2xFDnc0caqQ1zyfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
