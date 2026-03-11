@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,14 +27,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,7 +50,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +61,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.ProjectZeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.ProjectZeta.model.Notice
 
@@ -62,7 +73,8 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 //                    HomeScreen()
-                    SignUpScreen()
+//                    SignUpScreen()
+                    LostAndFoundScreen()
                 }
             }
         }
@@ -367,4 +379,217 @@ fun SignUpScreen() {
     }
 }
 
+@Composable
+fun LostAndFoundScreen() {
+
+    var search by remember { mutableStateOf("") }
+    var selectedtabindex by remember { mutableStateOf(0) }
+    val tabtitles = listOf("Lost", "Found")
+//    val footer=listOf("Home","LNF","PF","About")
+    var footerindex by remember { mutableStateOf(0) }
+    val footerr: List<Int> = listOf(
+        R.drawable.baseline_home_24,
+        R.drawable.outline_feature_search_24,
+        R.drawable.baseline_local_parking_24,
+        R.drawable.outline_person_24
+    )
+
+    var foundindex by remember { mutableStateOf(0) }
+
+    var list2 = mutableListOf<Found>()
+    list2.add(Found("Title 1", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 2", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 3", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 4", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 5", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 6", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 7", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 8", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 9", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 10", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 11", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 12", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 13", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 14", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 15", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 16", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 17", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 18", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 19", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 20", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 21", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 22", "Description 1", R.drawable.ic_launcher_background))
+    list2.add(Found("Title 23", "Description 1", R.drawable.ic_launcher_background))
+
+    var listt = mutableListOf<String>()
+    listt.add("Description 1")
+    listt.add("Description 2")
+    listt.add("Description 3")
+    listt.add("Description 4")
+    listt.add("Description 5")
+    listt.add("Description 6")
+    listt.add("Description 7")
+    listt.add("Description 8")
+    listt.add("Description 9")
+    listt.add("Description 10")
+    listt.add("Description 11")
+    listt.add("Description 12")
+    listt.add("Description 13")
+    listt.add("Description 14")
+    listt.add("Description 15")
+    listt.add("Description 16")
+    listt.add("Description 17")
+    listt.add("Description 18")
+    listt.add("Description 19")
+    listt.add("Description 20")
+    listt.add("Description 21")
+    listt.add("Description 22")
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+        TabRow(
+            selectedTabIndex = selectedtabindex,
+            divider = { HorizontalDivider() },
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .fillMaxWidth()
+                .drawBehind {
+                    val x = size.width / 2f
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+        ) {
+            tabtitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedtabindex == index,
+                    onClick = { selectedtabindex = index },
+                    text = { Text(text = title) }
+                )
+            }
+        }
+
+        OutlinedTextField(
+            value = search,
+            onValueChange = { search = it },
+            Modifier.fillMaxWidth().padding(top = 20.dp),
+            label = { Text("Search") },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search icon"
+                )
+            }
+        )
+        Card(
+            modifier = Modifier
+                .weight(2f)
+                .fillMaxWidth().padding(top = 20.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when (selectedtabindex) {
+                    0 -> {
+                        items(listt) { item ->
+                            Text(item, modifier = Modifier.padding(vertical = 8.dp))
+                            HorizontalDivider()
+                        }
+                    }
+
+                    1 -> {
+                        items(
+                            items = list2,
+                            key = { it.hashCode() }
+                        ) { found ->
+                            val (foundTitle, foundDesc, foundImage) = found
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { foundindex = list2.indexOf(found) }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = foundImage),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        text = foundTitle,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = foundDesc,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth().padding(top = 20.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = {}) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "")
+            }
+        }
+
+        TabRow(
+            selectedTabIndex = footerindex,
+            divider = { HorizontalDivider() },
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(top = 130.dp)
+                .fillMaxWidth().size(100.dp)
+                .drawBehind {
+                    val x = size.width / 2f
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+        ) {
+            footerr.forEachIndexed { index, icon ->
+                Tab(
+                    selected = footerindex == index,
+                    onClick = {
+                        footerindex = index
+                        if (index == 1) {
+                            selectedtabindex = 0
+                        }
+                    },
+                    icon = {
+                        Image(
+                            painterResource(icon),
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
+        }
+
+    }
+}
 
