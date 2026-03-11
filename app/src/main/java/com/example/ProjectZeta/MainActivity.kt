@@ -61,7 +61,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreen()
+//                    HomeScreen()
+                    SignUpScreen()
                 }
             }
         }
@@ -184,6 +185,184 @@ fun HomeScreen(){
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Find Notes")
+        }
+    }
+}
+
+@Composable
+fun SignUpScreen() {
+    var name by remember { mutableStateOf("") }
+    var number by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    // Error states
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var numberError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
+    fun validate(): Boolean {
+        var ok = true
+
+        // --- Name ---
+        val nameTrim = name.trim()
+        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s'’-]{1,49}$")
+        nameError = when {
+            nameTrim.isEmpty() -> { ok = false; "Name is required" }
+            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
+            else -> null
+        }
+
+        // --- Phone Number ---
+        val digitsOnly = number.filter { it.isDigit() }
+        val phoneRegex = Regex("^[6-9]\\d{9}$") // Starts with 6-9 and has exactly 10 digits
+
+        numberError = when {
+            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
+            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
+            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
+            else -> null
+        }
+
+        // --- Email ---
+        val emailTrim = email.trim()
+        emailError = when {
+            emailTrim.isEmpty() -> { ok = false; "Email is required" }
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
+                ok = false; "Enter a valid email address"
+            }
+            else -> null
+        }
+
+        // --- Password ---
+        val pw = password
+        if (pw.isEmpty()) {
+            passwordError = "Password is required"
+            ok = false
+        } else {
+            val rules = listOf(
+                Regex(".{8,}") to "8+ characters",
+                Regex("[a-z]") to "one lowercase",
+                Regex("[A-Z]") to "one uppercase",
+                Regex("\\d") to "one digit",
+                Regex("[^A-Za-z0-9]") to "one special character"
+            )
+            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(pw) }.map { it.second }
+            passwordError = if (failed.isNotEmpty()) {
+                ok = false
+                "Password must include: ${failed.joinToString(", ")}"
+            } else null
+        }
+
+        return ok
+    }
+
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize().background(color = Color(0xFFBCBFE8))
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = "Create Account", style = MaterialTheme.typography.headlineLarge)
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Image(
+                painter = painterResource(id = R.drawable.outline_account_circle_24),
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Name
+            OutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    if (nameError != null) nameError = null // clear as user types
+                },
+                label = { Text("Name") },
+                singleLine = true,
+                isError = nameError != null,
+                supportingText = { if (nameError != null) Text(nameError!!) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Phone
+            OutlinedTextField(
+                value = number,
+                onValueChange = {
+                    number = it
+                    if (numberError != null) numberError = null
+                },
+                label = { Text("Phone Number") },
+                singleLine = true,
+                isError = numberError != null,
+                supportingText = { if (numberError != null) Text(numberError!!) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Email
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    if (emailError != null) emailError = null
+                },
+                label = { Text("Email Address") },
+                singleLine = true,
+                isError = emailError != null,
+                supportingText = { if (emailError != null) Text(emailError!!) },
+                // This provides the @ and . buttons on the keyboard
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    if (passwordError != null) passwordError = null
+                },
+                label = { Text("Password") },
+                singleLine = true,
+                isError = passwordError != null,
+                supportingText = {
+                    if (passwordError != null) Text(passwordError!!)
+                },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            val context = LocalContext.current
+            Button(
+                onClick = {
+                    if (validate()) {
+                        Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                        // Proceed to next screen (Login)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Sign Up")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(onClick = {  }) {
+                Text("Already have an account? Log In")
+            }
         }
     }
 }
