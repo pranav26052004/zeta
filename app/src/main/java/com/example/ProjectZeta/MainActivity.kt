@@ -1,11 +1,9 @@
 package com.example.myapplication
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -34,15 +35,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,18 +52,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import com.example.ProjectZeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.ProjectZeta.model.Notice
+import com.example.projectzeta.Model.ParkingSlot
+import com.example.projectzeta.ViewModels.ReservationViewModel
+import com.google.firebase.database.FirebaseDatabase
+import kotlin.collections.get
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,6 +76,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    Greeting(
+//                        name = "Android",
+//                        modifier = Modifier.padding(innerPadding)
+//                    )
+                    parkingScreen()
 //                    HomeScreen()
 //                    SignUpScreen()
                     LostAndFoundScreen()
@@ -81,6 +88,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 @Composable
@@ -89,6 +97,72 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         text = "Hello $name!",
         modifier = modifier
     )
+}
+
+@Composable
+fun parkingScreen(viewModel: ReservationViewModel = viewModel()) {
+    val slots by viewModel.slots.collectAsState()
+    val currentUser = "Fuzail" //will be the current users username
+
+    Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Column {
+            Text("Campus Connect Header here", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+        }
+        Column(Modifier.weight(1f)) {
+            LazyVerticalGrid(columns = GridCells.Fixed(4)) {
+                items(slots, key = {it.parkingId}){slot->
+                    var color = if(slot.available) Color.Green else Color.Red
+                    Column(
+                        Modifier.padding(8.dp)
+                            .height(65.dp)
+                            .background(color)
+                            .clickable{
+                                viewModel.reserveWithDb(slot, currentUser)
+                                if(slot.available){
+                                    color = Color.Green
+                                } else{
+                                    color = Color.Red
+                                }
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        Spacer(Modifier.height(2.dp))
+                        Icon(painterResource(R.drawable.parking_icon), contentDescription = "ParkingIcon", Modifier.size(35.dp), tint = Color.Magenta)
+                        Spacer(Modifier.height(2.dp))
+                        Text("Id: ${slot.parkingId}", color = Color.White)
+                    }
+
+                }
+            }
+        }
+        Spacer(Modifier.height(18.dp))
+        Column(Modifier.height(250.dp).padding(8.dp, 0.dp)) {
+            Text("Total Slots: ${slots.size}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                Column{
+                    Text("Available Slots: ", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    LazyColumn {
+                        items(slots.size){it->
+                            if(slots[it].available)
+                                Text(slots[it].parkingId.toString())
+                        }
+                    }
+                }
+                Spacer(Modifier.width(50.dp))
+                Column{
+                    Text("Reserved Slots: ", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    LazyColumn {
+                        items(slots.size){it->
+                            if(!slots[it].available)
+                                Text(slots[it].parkingId.toString())
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(18.dp))
+        Column { Text("Footer Comes Here") }
+    }
 }
 
 @Preview(showBackground = true)
