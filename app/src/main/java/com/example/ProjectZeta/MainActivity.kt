@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +62,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.ProjectZeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.ProjectZeta.model.Notice
@@ -589,7 +591,33 @@ fun LostAndFoundScreen() {
                 )
             }
         }
-
     }
 }
 
+
+@Composable
+fun Login(){
+    val username by rememberSaveable { mutableStateOf("") }
+    val password by rememberSaveable { mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ){
+        Text("CAMPUS CONNECT", Modifier.padding(bottom = 100.dp),fontWeight = FontWeight.Bold, fontSize = 30.sp)
+        OutlinedTextField(
+            value = username,
+            onValueChange = {username},
+            label = { Text("Enter Username") }
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = {password},
+            label = { Text("Enter Password") }
+        )
+        Row(Modifier.padding(top = 20.dp)) {
+            Text("Sign Up", Modifier.padding(start = 15.dp))
+            Text("Forgot Password", Modifier.padding(start = 40.dp))
+        }
+        Button(onClick = {}, Modifier.padding(top = 20.dp)) {Text("Login") }
+    }
+}
