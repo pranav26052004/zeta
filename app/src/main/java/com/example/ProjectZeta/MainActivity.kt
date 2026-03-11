@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -47,6 +48,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -76,6 +78,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.ProjectZeta.ViewModels.LiveNotesSharing
 import com.example.ProjectZeta.model.Notice
 import com.example.ProjectZeta.ViewModels.UserViewModel
 import com.example.ProjectZeta.constants.FirebaseDatabases
@@ -92,7 +99,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {  innerPadding ->
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 //                    Greeting(
 //                        name = "Android",
 //                        modifier = Modifier.padding(innerPadding)
@@ -102,7 +109,7 @@ class MainActivity : ComponentActivity() {
 //                    SignUpScreen()
 //                    LostAndFoundScreen()
 //                    FindAllNotes()
-                    AboutPage()
+                   AppNavigation()
                 }
             }
         }
@@ -119,7 +126,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun parkingScreen(viewModel: ReservationViewModel = viewModel()) {
+fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: NavController) {
     val slots by viewModel.slots.collectAsState()
     val currentUser = "Fuzail" //will be the current users username
 
@@ -188,29 +195,25 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel()) {
 @Composable
 fun GreetingPreview() {
     MyApplicationTheme {
-        AboutPage()
-//        HomeScreen()
-//        LostAndFoundScreen()
-
+        AppNavigation()
     }
 }
 
 @Composable
-fun HomeScreen(){
+fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xFFBCBFE8)).padding(16.dp).statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Top Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { /* Handle profile click */ }) {
+                IconButton(onClick = { navController.navigate("aboutPage") }) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = "User Profile",
@@ -275,7 +278,9 @@ fun HomeScreen(){
 
         // Action Buttons
         Button(
-            onClick = {  }, //navigation to LNS Screen
+            onClick = {
+                navController.navigate("liveNotesSharing")
+            }, //navigation to LNS Screen
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("LNS (Live Note Sharing)")
@@ -283,7 +288,9 @@ fun HomeScreen(){
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { }, //upload notes screen
+            onClick = {
+                navController.navigate("uploadNotes")
+            }, //upload notes screen
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Upload Notes")
@@ -291,16 +298,67 @@ fun HomeScreen(){
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = {  }, //find notes screen
+            onClick = {
+                navController.navigate("findAllNotes")
+            }, //find notes screen
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Find Notes")
         }
     }
+    var selectedtabindex by remember { mutableStateOf(0) }
+    var footerr : List<ImageVector> = listOf(
+        Icons.Default.Home,
+        Icons.Default.Search,
+        Icons.Default.ShoppingCart,
+        Icons.Default.AccountCircle,
+    )
+    var footerindex by remember { mutableStateOf(0) }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        TabRow(
+            selectedTabIndex = selectedtabindex,
+            divider = { HorizontalDivider() },
+            modifier = Modifier
+//                .padding(top = 150.dp)
+                .fillMaxWidth()
+                .drawBehind {
+                    val x = size.width / 2f
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+        ) {
+            footerr.forEachIndexed { index, icon ->
+                Tab(
+                    selected = footerindex == index,
+                    onClick = {
+                        viewModels.footerindex.value = index
+                        if (index==1) {
+                            selectedtabindex = 0
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
+
+
+        }
+    }
 }
 
 @Composable
-fun SignUpScreen(viewModel: UserViewModel = viewModel()) {
+fun SignUpScreen(viewModel: UserViewModel = viewModel(),navController:NavController) {
 
     val name by viewModel.nameOfUser.collectAsState()
     val number by viewModel.userPhoneNumber.collectAsState()
@@ -499,12 +557,11 @@ fun SignUpScreen(viewModel: UserViewModel = viewModel()) {
 }
 
 @Composable
-fun LostAndFoundScreen() {
+fun LostAndFoundScreen(navController:NavController) {
 
     var search by remember { mutableStateOf("") }
     var selectedtabindex by remember { mutableStateOf(0) }
     val tabtitles = listOf("Lost", "Found")
-//    val footer=listOf("Home","LNF","PF","About")
     var footerindex by remember { mutableStateOf(0) }
     val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -712,9 +769,9 @@ fun LostAndFoundScreen() {
 }
 
 @Composable
-fun Login(userViewModel: UserViewModel = viewModel()){
-    val userEmail by userViewModel.userEmail.collectAsState() //rememberSaveable { mutableStateOf("") }
-    val userPassword by userViewModel.userPassword.collectAsState() //rememberSaveable { mutableStateOf("") }
+fun Login(userViewModel: UserViewModel = viewModel(),navController:NavController){
+    val userEmail by userViewModel.userEmail.collectAsState()
+    val userPassword by userViewModel.userPassword.collectAsState()
     Column(modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -731,15 +788,19 @@ fun Login(userViewModel: UserViewModel = viewModel()){
             label = { Text("Enter Password") }
         )
         Row(Modifier.padding(top = 20.dp)) {
-            Text("Sign Up", Modifier.padding(start = 15.dp))
+            Text("Sign Up", Modifier.padding(start = 15.dp).clickable(true, onClick = {
+                navController.navigate("signupScreen")
+            }))
             Text("Forgot Password", Modifier.padding(start = 40.dp))
         }
-        Button(onClick = {}, Modifier.padding(top = 20.dp)) {Text("Login") }
+        Button(onClick = {
+            navController.navigate("homeScreen")
+        }, Modifier.padding(top = 20.dp)) {Text("Login") }
     }
 }
 
 @Composable
-fun AboutPage(userViewModel: UserViewModel = viewModel()) {
+fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavController) {
     var context=LocalContext.current
     userViewModel.getUserandSetState("412345")
     val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
@@ -932,7 +993,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel()) {
 
 
 @Composable
-fun UploadNotes(){
+fun UploadNotes(navController:NavController){
     var selectedtabindex by remember { mutableStateOf(0) }
     var footerr : List<ImageVector> = listOf(
         Icons.Default.Home,
@@ -1022,7 +1083,7 @@ fun UploadNotes(){
 }
 
 @Composable
-fun FindAllNotes(){
+fun FindAllNotes(navController:NavController){
     var search by remember { mutableStateOf("") }
     var selectedtabindex by remember { mutableStateOf(0) }
     var footerindex by remember { mutableStateOf(0) }
@@ -1098,3 +1159,186 @@ fun FindAllNotes(){
         }
     }
 }
+
+@Composable
+fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) {
+    var selectedtabindex by remember { mutableStateOf(0) }
+    var footerr : List<ImageVector> = listOf(
+        Icons.Default.Home,
+        Icons.Default.Search,
+        Icons.Default.ShoppingCart,
+        Icons.Default.AccountCircle,
+    )
+    val footerindex by viewModels.footerindex.collectAsState()
+    val selectedTab by viewModels.selectedTab.collectAsState()
+    val searchQuery by viewModels.searchQuery.collectAsState()
+    val searchTitle by viewModels.searchTitle.collectAsState()
+    val searchLiveText by viewModels.searchLiveText.collectAsState()
+    val goLiveTitle by viewModels.goLiveTitle.collectAsState()
+    val goLiveDescription by viewModels.goLiveDescription.collectAsState()
+    val liveId by viewModels.goLiveDescription.collectAsState()
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Live Screen",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        )
+        val tabs = listOf("Search", "Go Live")
+        TabRow(selectedTabIndex = selectedTab) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { viewModels.selectedTab.value = index },
+                    text = { Text(title) }
+                )
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        if (selectedTab == 0) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModels.searchQuery.value = it },
+                    label = { Text("Search") },
+                    placeholder = { Text("Search link...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = {
+
+                }, modifier = Modifier.padding(start=140.dp)) {
+                    Text("Search")
+                }
+                Spacer(Modifier.height(12.dp))
+                Card(elevation= CardDefaults.cardElevation(10.dp), colors =  CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black)) {
+                   Spacer(Modifier.height(5.dp))
+                    Text(
+                        searchTitle,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(5.dp))
+                }
+                Spacer(Modifier.height(12.dp))
+                Card(elevation= CardDefaults.cardElevation(10.dp), colors =  CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black)) {
+                    Text(
+                        searchLiveText,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(500.dp)
+                    )
+                }
+            }
+        } else {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = goLiveTitle,
+                    onValueChange = { viewModels.goLiveTitle.value = it },
+                    label = { Text("Live Title") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = goLiveDescription,
+                    onValueChange = { viewModels.goLiveDescription.value = it },
+                    label = { Text("Description") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(600.dp)
+                )
+                Spacer(Modifier.height(12.dp))
+                Text(liveId)
+
+            }
+        }
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        TabRow(
+            selectedTabIndex = selectedtabindex,
+            divider = { HorizontalDivider() },
+            modifier = Modifier
+//                .padding(top = 150.dp)
+                .fillMaxWidth()
+                .drawBehind {
+                    val x = size.width / 2f
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+        ) {
+            footerr.forEachIndexed { index, icon ->
+                Tab(
+
+                    selected = footerindex == index,
+                    onClick = {
+                        viewModels.footerindex.value = index
+                        if (index==1) {
+                            selectedtabindex = 0
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
+
+
+        }
+    }
+}
+
+@Composable
+fun BottomTab(viewModels: LiveNotesSharing){
+
+}
+@Composable
+fun AppNavigation(){
+    val navController=rememberNavController()
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
+            Login(viewModel(),navController)
+        }
+        composable("signupScreen") {
+            SignUpScreen(viewModel(),navController)
+        }
+        composable("homeScreen") {
+            HomeScreen(viewModel(),navController)
+        }
+        composable("parkingScreen") {
+            parkingScreen(viewModel(),navController)
+        }
+        composable("lostAndFoundScreen") {
+            LostAndFoundScreen(navController)
+        }
+        composable("aboutPage") {
+            AboutPage(viewModel(),navController)
+        }
+        composable("uploadNotes") {
+            UploadNotes(navController)
+        }
+        composable("findAllNotes") {
+            FindAllNotes(navController)
+        }
+        composable ("liveNotesSharing"){
+            LiveNotesSharing(viewModel(),navController)
+        }
+    }
+}
+
+

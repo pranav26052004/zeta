@@ -43,7 +43,6 @@ class RealtimeFirebaseHelper {
             key: String,
             item: Any
         ) {
-
             database.child(tableName)
                 .child(key)
                 .setValue(item)
