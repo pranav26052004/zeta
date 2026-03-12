@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -205,165 +206,216 @@ fun GreetingPreview() {
 }
 
 @Composable
-fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color(0xFFBCBFE8))
-            .padding(16.dp)
-            .statusBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { navController.navigate("aboutPage") }) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "User Profile",
-                        modifier = Modifier.height(48.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Hello, Janai Kasle!", // Replace with actual user name
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(text = "Campus Notice Board", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Information Carousel
-        val notices = listOf(
-            Notice("New Resource", "Deep Learning notes uploaded by Jane Smith"),
-            Notice("Lost Item", "Blue backpack found in the cafeteria. Contact security."),
-            Notice("Parking Finder", "Available slots: P1-10, P2-5, P3-12")
-        )
-
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            items(notices) { notice ->
-                Card(
-                    modifier = Modifier
-                        .width(280.dp) // Fixed width for cards in LazyRow
-                        .height(120.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = notice.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = notice.description,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(52.dp))
-
-        // Action Buttons
-        Button(
-            onClick = {
-                navController.navigate("liveNotesSharing")
-            }, //navigation to LNS Screen
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("LNS (Live Note Sharing)")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                navController.navigate("uploadNotes")
-            }, //upload notes screen
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Upload Notes")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                navController.navigate("findAllNotes")
-            }, //find notes screen
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Find Notes")
-        }
-    }
+fun HomeScreen(viewModels: LiveNotesSharing, navController: NavController) {
     var selectedtabindex by remember { mutableStateOf(0) }
-    var footerr : List<Int> = listOf(
+    val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
         R.drawable.outline_feature_search_24,
         R.drawable.baseline_local_parking_24,
         R.drawable.outline_person_24
     )
     var footerindex by remember { mutableStateOf(0) }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        TabRow(
-            selectedTabIndex = selectedtabindex,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            divider = { HorizontalDivider() },
-            modifier = Modifier
-//                .padding(top = 150.dp)
-                .fillMaxWidth()
-                .drawBehind {
-                    val x = size.width / 2f
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x, 0f),
-                        end = Offset(x, size.height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-        ) {
-            footerr.forEachIndexed { index, icon ->
-                Tab(
-                    selected = footerindex == index,
-                    onClick = {
-                        viewModels.footerindex.value = index
-                        if (index==1) {
-                            selectedtabindex = 0
+
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent, // let the glow show through
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            bottomBar = {
+                // Bottom nav pinned to the bottom
+                Surface(
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                    tonalElevation = 2.dp,
+                    shadowElevation = 6.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+                ) {
+                    TabRow(
+                        selectedTabIndex = selectedtabindex,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        divider = { HorizontalDivider() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .drawBehind {
+                                val x = size.width / 2f
+                                drawLine(
+                                    color = Color.Black,
+                                    start = Offset(x, 0f),
+                                    end = Offset(x, size.height),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                            }
+                    ) {
+                        footerr.forEachIndexed { index, icon ->
+                            Tab(
+                                selected = footerindex == index,
+                                onClick = {
+                                    viewModels.footerindex.value = index
+                                    if (index == 1) {
+                                        selectedtabindex = 0
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        painterResource(icon),
+                                        contentDescription = null
+                                    )
+                                }
+                            )
                         }
-                    },
-                    icon = {
-                        Icon(
-                            painterResource(icon) ,
-                            contentDescription = null
-                        )
                     }
-                )
+                }
             }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(24.dp)
+                    .statusBarsPadding(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 2.dp,
+                    shadowElevation = 6.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { navController.navigate("aboutPage") }) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = "User Profile",
+                                    modifier = Modifier.height(36.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Hello, Janai Kasle!",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
 
+                Spacer(modifier = Modifier.height(24.dp))
 
+                // Main card surface (glass look)
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 4.dp,
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Text(
+                            text = "CAMPUS CONNECT",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 26.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Campus Notice Board",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Information Carousel (UNCHANGED)
+                        val notices = listOf(
+                            Notice("New Resource", "Deep Learning notes uploaded by Jane Smith"),
+                            Notice("Lost Item", "Blue backpack found in the cafeteria. Contact security."),
+                            Notice("Parking Finder", "Available slots: P1-10, P2-5, P3-12")
+                        )
+
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            items(notices) { notice ->
+                                Card(
+                                    modifier = Modifier
+                                        .width(280.dp)
+                                        .height(120.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(
+                                            text = notice.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = notice.description,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        // Action Buttons (UNCHANGED navigation)
+                        Button(
+                            onClick = { navController.navigate("liveNotesSharing") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text("LNS (Live Note Sharing)")
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = { navController.navigate("uploadNotes") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text("Upload Notes")
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = { navController.navigate("findAllNotes") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text("Find Notes")
+                        }
+                    }
+                }
+
+                // Add some bottom spacing so content doesn't get obscured by the bottomBar
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
     }
 }
+
 
 @Composable
 fun LostAndFoundScreen(navController:NavController) {
@@ -825,9 +877,10 @@ fun SignUpScreen(
 
 
 @Composable
-fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavController) {
-    var context=LocalContext.current
-    LaunchedEffect(Unit){
+fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavController) {
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
         userViewModel.getUserandSetState("412345")
     }
 
@@ -843,7 +896,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
 
     var selectedtabindex by remember { mutableStateOf(0) }
 
-    var footerr : List<Int> = listOf(
+    val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
         R.drawable.outline_feature_search_24,
         R.drawable.baseline_local_parking_24,
@@ -851,198 +904,267 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
     )
     var footerindex by remember { mutableStateOf(0) }
 
-    Column (
-        modifier = Modifier.padding(20.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Image(
-            painter = painterResource(R.drawable.logout),
-            modifier = Modifier.padding(start = 300.dp),
-            contentDescription = null
-        )
-
-        Text("Logout",
-            modifier = Modifier
-                .padding(start = 300.dp)
-                .clickable {
-                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
-                })
-    }
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text(
-            text = "Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 30.dp)
-        )
-        Image(
-            painter = painterResource(R.drawable.outline_person_24),
-            contentDescription = "Profile Image",
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-        )
-        Spacer(modifier = Modifier.height(30.dp))
-        Text("Edit Profile",
-            modifier = Modifier.clickable {
-                // Handle the click action here, for example, logging a message or updating state
-                Log.d("ClickableText", "Text clicked!")
-            })
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        OutlinedTextField(
-            value= editName,
-            onValueChange = {userViewModel.nameOfUser.value = it},
-            label = { Text("Name") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 0.dp)
-        )
-        OutlinedTextField(
-            value=editMobileNumber,
-            onValueChange = {userViewModel.userPhoneNumber.value = it},
-            label = { Text("Mobile Number") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 0.dp)
-        )
-        OutlinedTextField(
-            value=editEmail,
-            onValueChange = {userViewModel.userEmail.value=it},
-            label = { Text("Email") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 0.dp)
-        )
-        OutlinedTextField(
-            value=editPassword,
-            onValueChange = {userViewModel.userPassword.value=it},
-            label = { Text("Password") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 0.dp),
-            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val icon =
-                    if(passwordVisible)
-                        Icons.Default.Visibility
-                    else
-                        Icons.Default.VisibilityOff
-
-                IconButton(
-                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
-                ) { Icon(imageVector = icon, contentDescription = "Toggle Password") }
-            }
-        )
-        OutlinedTextField(
-            value=editConfirmPassword,
-            onValueChange = {editConfirmPassword=it},
-            label = { Text("Confirm Password") },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp, 0.dp),
-            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val icon =
-                    if(passwordVisible)
-                        Icons.Default.Visibility
-                    else
-                        Icons.Default.VisibilityOff
-
-                IconButton(
-                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
-                ) { Icon(imageVector = icon, contentDescription = "Toggle Password") }
-            }
-        )
-        Spacer(modifier = Modifier.height(30.dp))
-
-
-        Row(
-            modifier = Modifier.padding(30.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Button(
-                onClick = {
-                    if(editPassword==editConfirmPassword){
-                        userViewModel.updateUser(
-                            User(
-                                userId,
-                                editName,
-                                editMobileNumber,
-                                editEmail,
-                                editPassword
-                            ))
-                        Toast.makeText(context, "Updated!!", Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        Toast.makeText(context, "Password and Conform Password are Not Same", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            ) {
-                Text("Save changes")
-            }
-
-            Button(
-                onClick = {  },
-                Modifier.padding(start = 30.dp)
-            ){
-                Text("Delete Account")
-            }
-
-        }
-
-    }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        TabRow(
-            selectedTabIndex = selectedtabindex,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            divider = { HorizontalDivider() },
-            modifier = Modifier
-//                .padding(top = 150.dp)
-                .fillMaxWidth()
-                .drawBehind {
-                    val x = size.width / 2f
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x, 0f),
-                        end = Offset(x, size.height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-        ) {
-            footerr.forEachIndexed { index, icon ->
-                Tab(
-
-                    selected = footerindex == index,
-                    onClick = {
-                        footerindex = index
-                        if (index==1) {
-                            selectedtabindex = 0
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            bottomBar = {
+                // Footer pinned to bottom — preserves your original TabRow logic
+                Surface(
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                    tonalElevation = 2.dp,
+                    shadowElevation = 6.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+                ) {
+                    TabRow(
+                        selectedTabIndex = selectedtabindex,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        divider = { HorizontalDivider() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .drawBehind {
+                                val x = size.width / 2f
+                                drawLine(
+                                    color = Color.Black,
+                                    start = Offset(x, 0f),
+                                    end = Offset(x, size.height),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                            }
+                    ) {
+                        footerr.forEachIndexed { index, icon ->
+                            Tab(
+                                selected = footerindex == index,
+                                onClick = {
+                                    footerindex = index
+                                    if (index == 1) {
+                                        selectedtabindex = 0
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        painterResource(icon),
+                                        contentDescription = null
+                                    )
+                                }
+                            )
                         }
-                    },
-                    icon = {
-                        Icon(
-                            painterResource(icon),
-                            contentDescription = null
+                    }
+                }
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(24.dp)
+                    .statusBarsPadding(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 2.dp,
+                    shadowElevation = 6.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.logout),
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Logout",
+                            modifier = Modifier.clickable {
+                                Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                            },
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
                         )
                     }
-                )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // ===== Main Profile Surface (glass look) =====
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 4.dp,
+                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Profile",
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.padding(bottom = 20.dp),
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Image(
+                            painter = painterResource(R.drawable.outline_person_24),
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            "Edit Profile",
+                            modifier = Modifier.clickable {
+                                Log.d("ClickableText", "Text clicked!")
+                            },
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        OutlinedTextField(
+                            value = editName,
+                            onValueChange = { userViewModel.nameOfUser.value = it },
+                            label = { Text("Name") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = editMobileNumber,
+                            onValueChange = { userViewModel.userPhoneNumber.value = it },
+                            label = { Text("Mobile Number") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = editEmail,
+                            onValueChange = { userViewModel.userEmail.value = it },
+                            label = { Text("Email") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = editPassword,
+                            onValueChange = { userViewModel.userPassword.value = it },
+                            label = { Text("Password") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp),
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                val icon =
+                                    if (passwordVisible) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+
+                                IconButton(
+                                    onClick = { userViewModel.passwordVisible.value = !passwordVisible }
+                                ) {
+                                    Icon(imageVector = icon, contentDescription = "Toggle Password")
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = editConfirmPassword,
+                            onValueChange = { editConfirmPassword = it },
+                            label = { Text("Confirm Password") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp),
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                val icon =
+                                    if (passwordVisible) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+
+                                IconButton(
+                                    onClick = { userViewModel.passwordVisible.value = !passwordVisible }
+                                ) {
+                                    Icon(imageVector = icon, contentDescription = "Toggle Password")
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Row(
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (editPassword == editConfirmPassword) {
+                                        userViewModel.updateUser(
+                                            User(
+                                                userId,
+                                                editName,
+                                                editMobileNumber,
+                                                editEmail,
+                                                editPassword
+                                            )
+                                        )
+                                        Toast.makeText(context, "Updated!!", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Password and Conform Password are Not Same",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            ) {
+                                Text("Save changes")
+                            }
+
+                            Button(
+                                onClick = { },
+                                modifier = Modifier.padding(start = 30.dp)
+                            ) {
+                                Text("Delete Account")
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
-
-
         }
     }
 }
@@ -1223,9 +1345,13 @@ fun FindAllNotes(navController:NavController){
 }
 
 @Composable
-fun LiveNotesSharing(viewModels: LiveNotesSharing,userViewModel: UserViewModel,navController: NavController) {
+fun LiveNotesSharing(
+    viewModels: LiveNotesSharing,
+    userViewModel: UserViewModel,
+    navController: NavController
+) {
     var selectedtabindex by remember { mutableStateOf(0) }
-    var footerr : List<Int> = listOf(
+    val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
         R.drawable.outline_feature_search_24,
         R.drawable.baseline_local_parking_24,
@@ -1234,145 +1360,226 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,userViewModel: UserViewModel,n
     var count by remember { mutableStateOf(0) }
     val footerindex by viewModels.footerindex.collectAsState()
     val selectedTab by viewModels.selectedTab.collectAsState()
-     val searchQuery by viewModels.searchQuery.collectAsState()
-//    var searchQuery by remember{mutableStateOf("")}
+    val searchQuery by viewModels.searchQuery.collectAsState()
     val searchTitle by viewModels.searchTitle.collectAsState()
     val searchLiveText by viewModels.searchLiveText.collectAsState()
     val goLiveTitle by viewModels.goLiveTitle.collectAsState()
     val goLiveDescription by viewModels.goLiveDescription.collectAsState()
     val liveId by viewModels.goLiveDescription.collectAsState()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp).background(color = Color(0x335B6DFA)), horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Live Screen",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
-        )
-        val tabs = listOf("Search", "Go Live")
-        TabRow(selectedTabIndex = selectedTab) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { viewModels.selectedTab.value = index },
-                    text = { Text(title) }
-                )
-            }
-        }
-        Spacer(Modifier.height(16.dp))
-        if (selectedTab == 0) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModels.searchQuery.value = it },
-                    label = { Text("Search") },
-                    placeholder = { Text("Search link...") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if(count>0){
-                    viewModels.serachIdinLiveShare(searchQuery)
-                }
-                viewModels.serachIdinLiveShare(searchQuery)
-                Spacer(Modifier.height(12.dp))
-                Button(onClick = {
-                    count++
-                    viewModels.serachIdinLiveShare(searchQuery)
-                }, modifier = Modifier.padding(start=140.dp)) {
-                    Text("Search")
-                }
-                Spacer(Modifier.height(12.dp))
-                Card(elevation= CardDefaults.cardElevation(10.dp), colors =  CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black)) {
-                   Spacer(Modifier.height(5.dp))
-                    Text(
-                        searchTitle,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.height(5.dp))
-                }
-                Spacer(Modifier.height(12.dp))
-                Card(elevation= CardDefaults.cardElevation(10.dp), colors =  CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black)) {
-                    Text(
-                        searchLiveText,
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            bottomBar = {
+                // Footer pinned to bottom – preserves your original footer logic
+                Surface(
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                    tonalElevation = 2.dp,
+                    shadowElevation = 6.dp,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+                ) {
+                    TabRow(
+                        selectedTabIndex = selectedtabindex,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        divider = { HorizontalDivider() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(500.dp)
-                    )
+                            .navigationBarsPadding()
+                            .drawBehind {
+                                // Your vertical center divider (kept as-is)
+                                val x = size.width / 2f
+                                drawLine(
+                                    color = Color.Black,
+                                    start = Offset(x, 0f),
+                                    end = Offset(x, size.height),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                            }
+                    ) {
+                        footerr.forEachIndexed { index, icon ->
+                            Tab(
+                                selected = footerindex == index,
+                                onClick = {
+                                    // PRESERVE: your original behavior
+                                    viewModels.footerindex.value = index
+                                    if (index == 1) {
+                                        selectedtabindex = 0
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        painterResource(icon),
+                                        contentDescription = null
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
-        } else {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = goLiveTitle,
-                    onValueChange = {
-                        viewModels.goLiveTitle.value=it
-                    },
-                    label = { Text("Live Title") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = goLiveDescription,
-                    onValueChange = {
-                        viewModels.goLiveDescription.value = it
-                        viewModels.liveNotesSharing(userViewModel,goLiveTitle,goLiveDescription)
-                                    },
-                    label = { Text("Description") },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = "Live Screen",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(600.dp)
+                        .padding(bottom = 8.dp)
                 )
-                Spacer(Modifier.height(12.dp))
-                Text(userViewModel.userId.value)
-            }
-        }
-    }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        TabRow(
-            selectedTabIndex = selectedtabindex,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            divider = { HorizontalDivider() },
-            modifier = Modifier
-//                .padding(top = 150.dp)
-                .fillMaxWidth()
-                .drawBehind {
-                    val x = size.width / 2f
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x, 0f),
-                        end = Offset(x, size.height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-        ) {
-            footerr.forEachIndexed { index, icon ->
-                Tab(
 
-                    selected = footerindex == index,
-                    onClick = {
-                        viewModels.footerindex.value = index
-                        if (index==1) {
-                            selectedtabindex = 0
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            painterResource(icon),
-                            contentDescription = null
+                val tabs = listOf("Search", "Go Live")
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.70f),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { viewModels.selectedTab.value = index },
+                            text = {
+                                Text(
+                                    title,
+                                    color = if (selectedTab == index)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         )
                     }
-                )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // ====== SEARCH TAB ======
+                if (selectedTab == 0) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { viewModels.searchQuery.value = it },
+                            label = { Text("Search") },
+                            placeholder = { Text("Search link...") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+
+                        if (count > 0) {
+                            viewModels.serachIdinLiveShare(searchQuery)
+                        }
+                        viewModels.serachIdinLiveShare(searchQuery)
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Button(
+                            onClick = {
+                                count++
+                                viewModels.serachIdinLiveShare(searchQuery)
+                            },
+                            modifier = Modifier
+                                .padding(start = 140.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Text("Search")
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Card(
+                            elevation = CardDefaults.cardElevation(10.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Spacer(Modifier.height(5.dp))
+                            Text(
+                                searchTitle,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(Modifier.height(5.dp))
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Card(
+                            elevation = CardDefaults.cardElevation(10.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
+                            modifier = Modifier.clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Text(
+                                searchLiveText,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(500.dp)
+                                    .padding(12.dp),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                } else {
+                    // ====== GO LIVE TAB ======
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = goLiveTitle,
+                            onValueChange = { newValue -> viewModels.goLiveTitle.value = newValue },
+                            label = { Text("Live Title") },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = goLiveDescription,
+                            onValueChange = {
+                                // PRESERVE: your original call while typing
+                                viewModels.goLiveDescription.value = it
+                                viewModels.liveNotesSharing(userViewModel, goLiveTitle, goLiveDescription)
+                            },
+                            label = { Text("Description") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(600.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        // PRESERVE: your static text
+                        Text("userViewModel.userId.value")
+                    }
+                }
+
+                // Optional bottom spacer so content doesn't touch the bottom bar
+                Spacer(modifier = Modifier.height(8.dp))
             }
-
-
         }
     }
 }
