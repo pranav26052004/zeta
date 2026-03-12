@@ -1,7 +1,5 @@
 package com.example.projectzeta.Repository
 
-import com.example.projectzeta.Model.User
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -85,11 +83,11 @@ class RealtimeFirebaseHelper {
         }
 
         fun <T> readItemUsingProperty(
-            tableName:String,
-            property:String,
-            value:String,
-            clazz:Class<T>,
-            onResult:(T?) -> Unit
+            tableName: String,
+            property: String,
+            value: String,
+            clazz: Class<T>,
+            onResult: (T?) -> Unit
         ){
             database.child(tableName)
                 .orderByChild(property)

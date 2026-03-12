@@ -1,7 +1,7 @@
 package com.example.projectzeta.ViewModels
 
 import androidx.lifecycle.ViewModel
-import com.example.ProjectZeta.constants.FirebaseDatabases
+import com.example.projectzeta.constants.FirebaseDatabases
 import com.example.projectzeta.Model.ParkingSlot
 import com.example.projectzeta.Repository.RealtimeFirebaseHelper
 import kotlinx.coroutines.flow.MutableStateFlow

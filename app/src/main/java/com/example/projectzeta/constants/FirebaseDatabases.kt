@@ -1,4 +1,4 @@
-package com.example.ProjectZeta.constants
+package com.example.projectzeta.constants
 
 object FirebaseDatabases {
     const val PARKING_SLOT = "parkingSlots"

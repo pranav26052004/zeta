@@ -1,11 +1,10 @@
-package com.example.ProjectZeta.ViewModels
+package com.example.projectzeta.ViewModels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.ProjectZeta.constants.FirebaseDatabases
+import com.example.projectzeta.constants.FirebaseDatabases
 import com.example.projectzeta.Model.User
 import com.example.projectzeta.Repository.RealtimeFirebaseHelper
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class UserViewModel: ViewModel()    {

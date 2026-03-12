@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -35,10 +37,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CardDefaults
@@ -51,14 +52,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +69,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -82,14 +84,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.ProjectZeta.ViewModels.LiveNotesSharing
-import com.example.ProjectZeta.model.Notice
-import com.example.ProjectZeta.ViewModels.UserViewModel
-import com.example.ProjectZeta.constants.FirebaseDatabases
-import com.example.ProjectZeta.model.Found
+import com.example.projectzeta.ViewModels.LiveNotesSharing
+import com.example.projectzeta.model.Notice
+import com.example.projectzeta.ViewModels.UserViewModel
+import com.example.projectzeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.projectzeta.Model.User
-import com.example.projectzeta.Repository.RealtimeFirebaseHelper
 import com.example.projectzeta.ViewModels.ReservationViewModel
 
 class MainActivity : ComponentActivity() {
@@ -130,7 +130,9 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
     val slots by viewModel.slots.collectAsState()
     val currentUser = "Fuzail" //will be the current users username
 
-    Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier
+        .fillMaxSize()
+        .padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Column {
             Text("Campus Connect Header here", fontWeight = FontWeight.Bold, fontSize = 24.sp)
         }
@@ -139,14 +141,15 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
                 items(slots, key = {it.parkingId}){slot->
                     var color = if(slot.available) Color.Green else Color.Red
                     Column(
-                        Modifier.padding(8.dp)
+                        Modifier
+                            .padding(8.dp)
                             .height(65.dp)
                             .background(color)
-                            .clickable{
+                            .clickable {
                                 viewModel.reserveWithDb(slot, currentUser)
-                                if(slot.available){
+                                if (slot.available) {
                                     color = Color.Green
-                                } else{
+                                } else {
                                     color = Color.Red
                                 }
                             },
@@ -162,7 +165,9 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
             }
         }
         Spacer(Modifier.height(18.dp))
-        Column(Modifier.height(250.dp).padding(8.dp, 0.dp)) {
+        Column(Modifier
+            .height(250.dp)
+            .padding(8.dp, 0.dp)) {
             Text("Total Slots: ${slots.size}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
                 Column{
@@ -204,7 +209,9 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color(0xFFBCBFE8)).padding(16.dp).statusBarsPadding(),
+            .background(color = Color(0xFFBCBFE8))
+            .padding(16.dp)
+            .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
@@ -359,208 +366,6 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
 }
 
 @Composable
-fun SignUpScreen(viewModel: UserViewModel = viewModel(),navController:NavController) {
-
-    val name by viewModel.nameOfUser.collectAsState()
-    val number by viewModel.userPhoneNumber.collectAsState()
-    val email by viewModel.userEmail.collectAsState()
-    val password by viewModel.userPassword.collectAsState()
-    val nameError by viewModel.nameError.collectAsState()
-    val numberError by viewModel.numberError.collectAsState()
-    val emailError by viewModel.emailError.collectAsState()
-    val passwordError by viewModel.passwordError.collectAsState()
-    val passwordVisible by viewModel.passwordVisible.collectAsState()
-    val confirmPassword by viewModel.confirmPassword.collectAsState()
-    val confirmPasswordError by viewModel.confirmPasswordError.collectAsState()
-
-    fun validate(): Boolean {
-        var ok = true
-
-        // Name
-        val nameTrim = name.trim()
-        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
-        viewModel.nameError.value = when {
-            nameTrim.isEmpty() -> { ok = false; "Name is required" }
-            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
-            else -> ""
-        }
-
-        // Phone
-        val digitsOnly = number.filter { it.isDigit() }
-        val phoneRegex = Regex("^[6-9]\\d{9}$")
-        viewModel.numberError.value = when {
-            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
-            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
-            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
-            else -> ""
-        }
-
-        // Email
-        val emailTrim = email.trim()
-        viewModel.emailError.value = when {
-            emailTrim.isEmpty() -> { ok = false; "Email is required" }
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
-                ok = false; "Enter a valid email address"
-            }
-            else -> ""
-        }
-
-        // Password
-        val pw = password
-        if (pw.isEmpty()) {
-            viewModel.passwordError.value = "Password is required"
-            ok = false
-        } else {
-            val rules = listOf(
-                Regex(".{8,}") to "8+ characters",
-                Regex("[a-z]") to "one lowercase",
-                Regex("[A-Z]") to "one uppercase",
-                Regex("\\d") to "one digit",
-                Regex("[^A-Za-z0-9]") to "one special character"
-            )
-            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(pw) }.map { it.second }
-            viewModel.passwordError.value = if (failed.isNotEmpty()) {
-                ok = false; "Password must include: ${failed.joinToString(", ")}"
-            } else ""
-        }
-
-        // Confirm Password
-        val confirmPw = confirmPassword
-        viewModel.confirmPasswordError.value = when {
-            confirmPw.isEmpty() -> { ok = false; "Please confirm your password" }
-            confirmPw != password -> { ok = false; "Passwords do not match" }
-            else -> ""
-        }
-
-        return ok
-    }
-
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = Color(0xFFE1E6FF))
-                .padding(innerPadding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(text = "Create Account", style = MaterialTheme.typography.headlineLarge)
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Image(
-                painter = painterResource(id = R.drawable.outline_account_circle_24),
-                contentDescription = "Profile Image",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Name
-            OutlinedTextField(
-                value = name,
-                onValueChange = {
-                    viewModel.nameOfUser.value = it
-                    if (nameError.isNotEmpty()) viewModel.nameError.value = ""
-                },
-                label = { Text("Name") },
-                singleLine = true,
-                isError = nameError.isNotEmpty(),
-                supportingText = { if (nameError.isNotEmpty()) Text(nameError) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Phone
-            OutlinedTextField(
-                value = number,
-                onValueChange = {
-                    viewModel.userPhoneNumber.value = it.filter { c -> c.isDigit() }
-                    if (numberError.isNotEmpty()) viewModel.numberError.value = ""
-                },
-                label = { Text("Phone Number") },
-                singleLine = true,
-                isError = numberError.isNotEmpty(),
-                supportingText = { if (numberError.isNotEmpty()) Text(numberError) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Email
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    viewModel.userEmail.value = it
-                    if (emailError.isNotEmpty()) viewModel.emailError.value = ""
-                },
-                label = { Text("Email Address") },
-                singleLine = true,
-                isError = emailError.isNotEmpty(),
-                supportingText = { if (emailError.isNotEmpty()) Text(emailError) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Password
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    viewModel.userPassword.value = it
-                    if (passwordError.isNotEmpty()) viewModel.passwordError.value = ""
-                },
-                label = { Text("Password") },
-                singleLine = true,
-                isError = passwordError.isNotEmpty(),
-                supportingText = { if (passwordError.isNotEmpty()) Text(passwordError) },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Confirm Password
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = {
-                    viewModel.confirmPassword.value = it
-                    if (confirmPasswordError.isNotEmpty()) viewModel.confirmPasswordError.value = ""
-                },
-                label = { Text("Confirm Password") },
-                singleLine = true,
-                isError = confirmPasswordError.isNotEmpty(),
-                supportingText = { if (confirmPasswordError.isNotEmpty()) Text(confirmPasswordError) },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            val context = LocalContext.current
-            Button(
-                onClick = {
-                    if (validate()) {
-                        Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
-                    }
-                    navController.navigate("login")
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Sign Up")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextButton(onClick = {
-                navController.navigate("login")
-            }) {
-                Text("Already have an account? Log In")
-            }
-        }
-    }
-}
-
-@Composable
 fun LostAndFoundScreen(navController:NavController) {
 
     var search by remember { mutableStateOf("") }
@@ -656,7 +461,9 @@ fun LostAndFoundScreen(navController:NavController) {
         OutlinedTextField(
             value = search,
             onValueChange = { search = it },
-            Modifier.fillMaxWidth().padding(top = 20.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
             label = { Text("Search") },
             trailingIcon = {
                 Icon(
@@ -668,7 +475,8 @@ fun LostAndFoundScreen(navController:NavController) {
         Card(
             modifier = Modifier
                 .weight(2f)
-                .fillMaxWidth().padding(top = 20.dp)
+                .fillMaxWidth()
+                .padding(top = 20.dp)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             LazyColumn(
@@ -725,7 +533,8 @@ fun LostAndFoundScreen(navController:NavController) {
 
         Row(
             modifier = Modifier
-                .fillMaxWidth().padding(top = 20.dp)
+                .fillMaxWidth()
+                .padding(top = 20.dp)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.End
         ) {
@@ -740,7 +549,8 @@ fun LostAndFoundScreen(navController:NavController) {
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .padding(top = 130.dp)
-                .fillMaxWidth().size(100.dp)
+                .fillMaxWidth()
+                .size(100.dp)
                 .drawBehind {
                     val x = size.width / 2f
                     drawLine(
@@ -773,44 +583,261 @@ fun LostAndFoundScreen(navController:NavController) {
 }
 
 @Composable
-fun Login(userViewModel: UserViewModel = viewModel(),navController:NavController){
-    val userEmail by userViewModel.userEmail.collectAsState()
-    val userPassword by userViewModel.userPassword.collectAsState()
-    Column(modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ){
-        Text("CAMPUS CONNECT", Modifier.padding(bottom = 100.dp),fontWeight = FontWeight.Bold, fontSize = 30.sp)
-        OutlinedTextField(
-            value = userEmail,
-            onValueChange = {userViewModel.userEmail.value = it},
-            label = { Text("Enter Username") }
-        )
-        OutlinedTextField(
-            value = userPassword,
-            onValueChange = {userPassword},
-            label = { Text("Enter Password") }
-        )
-        Row(Modifier.padding(top = 20.dp)) {
-            Text("Sign Up", Modifier.padding(start = 15.dp).clickable(true, onClick = {
-                navController.navigate("signupScreen")
-            }))
-            Text("Forgot Password", Modifier.padding(start = 40.dp))
-        }
-        Button(onClick = {
-            navController.navigate("homeScreen")
-        }, Modifier.padding(top = 20.dp)) {Text("Login") }
+fun RadialGlowBackground(
+    modifier: Modifier = Modifier,
+    glowColor: Color = Color(0x335B6DFA),
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .background(Color.Transparent)
+            .drawBehind {
+                // Top-left gentle glow
+                drawCircle(
+                    color = glowColor,
+                    radius = size.minDimension * 0.6f,
+                    center = Offset(x = size.width * 0.25f, y = size.height * 0.15f)
+                )
+                // Slight right-side glow
+                drawCircle(
+                    color = glowColor.copy(alpha = 0.18f),
+                    radius = size.minDimension * 0.45f,
+                    center = Offset(x = size.width * 0.85f, y = size.height * 0.25f)
+                )
+                // Bottom faint glow
+                drawCircle(
+                    color = glowColor.copy(alpha = 0.12f),
+                    radius = size.minDimension * 0.5f,
+                    center = Offset(x = size.width * 0.5f, y = size.height * 0.95f)
+                )
+            }
+    ) {
+        content()
     }
 }
 
 @Composable
+fun Login(userViewModel: UserViewModel = viewModel(), navController: NavController) {
+
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                tonalElevation = 4.dp,
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
+            ) {
+                val userEmail by userViewModel.userEmail.collectAsState()
+                val userPassword by userViewModel.userPassword.collectAsState()
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "CAMPUS CONNECT",
+                        modifier = Modifier.padding(bottom = 32.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 30.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    OutlinedTextField(
+                        value = userEmail,
+                        onValueChange = { userViewModel.userEmail.value = it },
+                        label = { Text("Enter Username") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = userPassword,
+                        // NOTE: fixed bug here — now updates the state
+                        onValueChange = { userViewModel.userPassword.value = it },
+                        label = { Text("Enter Password") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(Modifier.padding(top = 20.dp)) {
+                        Text(
+                            "Sign Up",
+                            Modifier
+                                .padding(start = 15.dp)
+                                .clickable(onClick = {
+                                    navController.navigate("signupScreen")
+                                }),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            "Forgot Password",
+                            Modifier.padding(start = 40.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            navController.navigate("homeScreen")
+                        },
+                        modifier = Modifier
+                            .padding(top = 20.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text("Login")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SignUpScreen(
+    viewModel: UserViewModel = viewModel(),
+    navController: NavController
+) {
+    val name by viewModel.nameOfUser.collectAsState()
+    val number by viewModel.userPhoneNumber.collectAsState()
+    val email by viewModel.userEmail.collectAsState()
+    val password by viewModel.userPassword.collectAsState()
+    val confirmPassword by viewModel.confirmPassword.collectAsState()
+
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                tonalElevation = 4.dp,
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+                        text = "Create Account",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { viewModel.nameOfUser.value = it },
+                        label = { Text("Name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = number,
+                        onValueChange = {
+                            viewModel.userPhoneNumber.value = it.filter { c -> c.isDigit() }
+                        },
+                        label = { Text("Phone Number") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { viewModel.userEmail.value = it },
+                        label = { Text("Email") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { viewModel.userPassword.value = it },
+                        label = { Text("Password") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { viewModel.confirmPassword.value = it },
+                        label = { Text("Confirm Password") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            navController.navigate("login")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Sign Up")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Already have an account? Log In",
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            navController.navigate("login")
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
 fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavController) {
     var context=LocalContext.current
-    userViewModel.getUserandSetState("412345")
-    val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
-    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState() //remember { mutableStateOf("9876543210") }
-    val editEmail by userViewModel.userEmail.collectAsState() //remember { mutableStateOf("Sumanth@gmail.com") }
-    val editPassword by userViewModel.userPassword.collectAsState() //remember { mutableStateOf(("********")) }
+    LaunchedEffect(Unit){
+        userViewModel.getUserandSetState("412345")
+    }
+
+    val userId by userViewModel.userId.collectAsState()
+    val saveable by userViewModel.savable.collectAsState()
+    val editName by userViewModel.nameOfUser.collectAsState()
+    val editEmail by userViewModel.userEmail.collectAsState()
+    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState()
+    val editPassword by userViewModel.userPassword.collectAsState()
+
     var editConfirmPassword by remember { mutableStateOf("") }
     val passwordVisible by userViewModel.passwordVisible.collectAsState()
 
@@ -824,7 +851,6 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
     )
     var footerindex by remember { mutableStateOf(0) }
 
-
     Column (
         modifier = Modifier.padding(20.dp),
         verticalArrangement = Arrangement.Center,
@@ -837,9 +863,11 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
         )
 
         Text("Logout",
-            modifier = Modifier.padding(start = 300.dp).clickable {
-                Toast.makeText(context,"Logged out", Toast.LENGTH_SHORT).show()
-            })
+            modifier = Modifier
+                .padding(start = 300.dp)
+                .clickable {
+                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                })
     }
     Column (
         modifier = Modifier.fillMaxSize(),
@@ -868,32 +896,40 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
         Spacer(modifier = Modifier.height(30.dp))
 
         OutlinedTextField(
-            value=editName,
-            onValueChange = {userViewModel.nameOfUser.value=it},
+            value= editName,
+            onValueChange = {userViewModel.nameOfUser.value = it},
             label = { Text("Name") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp, 0.dp)
         )
         OutlinedTextField(
             value=editMobileNumber,
             onValueChange = {userViewModel.userPhoneNumber.value = it},
             label = { Text("Mobile Number") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp, 0.dp)
         )
         OutlinedTextField(
             value=editEmail,
             onValueChange = {userViewModel.userEmail.value=it},
             label = { Text("Email") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp, 0.dp)
         )
         OutlinedTextField(
             value=editPassword,
             onValueChange = {userViewModel.userPassword.value=it},
             label = { Text("Password") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp, 0.dp),
             visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val icon =
@@ -912,7 +948,9 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
             onValueChange = {editConfirmPassword=it},
             label = { Text("Confirm Password") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp, 0.dp),
             visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val icon =
@@ -935,14 +973,27 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
         ){
             Button(
                 onClick = {
-                    Toast.makeText(context,"Changes Saved", Toast.LENGTH_SHORT).show()
+                    if(editPassword==editConfirmPassword){
+                        userViewModel.updateUser(
+                            User(
+                                userId,
+                                editName,
+                                editMobileNumber,
+                                editEmail,
+                                editPassword
+                            ))
+                        Toast.makeText(context, "Updated!!", Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        Toast.makeText(context, "Password and Conform Password are Not Same", Toast.LENGTH_SHORT).show()
+                    }
                 }
             ) {
                 Text("Save changes")
             }
 
             Button(
-                onClick = {},
+                onClick = {  },
                 Modifier.padding(start = 30.dp)
             ){
                 Text("Delete Account")
@@ -1103,7 +1154,9 @@ fun FindAllNotes(navController:NavController){
         OutlinedTextField(
             value = search,
             onValueChange = { search = it },
-            Modifier.fillMaxWidth().padding(top = 30.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 30.dp),
             label = { Text("Search") },
             trailingIcon = {
                 Icon(
@@ -1116,7 +1169,8 @@ fun FindAllNotes(navController:NavController){
         Card(
             modifier = Modifier
                 .weight(2f)
-                .fillMaxWidth().padding(top = 30.dp)
+                .fillMaxWidth()
+                .padding(top = 30.dp)
                 .padding(horizontal = 14.dp, vertical = 5.dp)
         ){
             LazyColumn (
@@ -1135,7 +1189,8 @@ fun FindAllNotes(navController:NavController){
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .padding(top = 130.dp)
-                .fillMaxWidth().size(100.dp)
+                .fillMaxWidth()
+                .size(100.dp)
                 .drawBehind {
                     val x = size.width / 2f
                     drawLine(
@@ -1168,7 +1223,7 @@ fun FindAllNotes(navController:NavController){
 }
 
 @Composable
-fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) {
+fun LiveNotesSharing(viewModels: LiveNotesSharing,userViewModel: UserViewModel,navController: NavController) {
     var selectedtabindex by remember { mutableStateOf(0) }
     var footerr : List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -1176,9 +1231,11 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
         R.drawable.baseline_local_parking_24,
         R.drawable.outline_person_24
     )
+    var count by remember { mutableStateOf(0) }
     val footerindex by viewModels.footerindex.collectAsState()
     val selectedTab by viewModels.selectedTab.collectAsState()
-    val searchQuery by viewModels.searchQuery.collectAsState()
+     val searchQuery by viewModels.searchQuery.collectAsState()
+//    var searchQuery by remember{mutableStateOf("")}
     val searchTitle by viewModels.searchTitle.collectAsState()
     val searchLiveText by viewModels.searchLiveText.collectAsState()
     val goLiveTitle by viewModels.goLiveTitle.collectAsState()
@@ -1187,7 +1244,7 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
+        .padding(16.dp).background(color = Color(0x335B6DFA)), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Live Screen",
@@ -1217,9 +1274,14 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+                if(count>0){
+                    viewModels.serachIdinLiveShare(searchQuery)
+                }
+                viewModels.serachIdinLiveShare(searchQuery)
                 Spacer(Modifier.height(12.dp))
                 Button(onClick = {
-
+                    count++
+                    viewModels.serachIdinLiveShare(searchQuery)
                 }, modifier = Modifier.padding(start=140.dp)) {
                     Text("Search")
                 }
@@ -1246,7 +1308,9 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = goLiveTitle,
-                    onValueChange = { viewModels.goLiveTitle.value = it },
+                    onValueChange = {
+                        viewModels.goLiveTitle.value=it
+                    },
                     label = { Text("Live Title") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -1254,15 +1318,17 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
                     value = goLiveDescription,
-                    onValueChange = { viewModels.goLiveDescription.value = it },
+                    onValueChange = {
+                        viewModels.goLiveDescription.value = it
+                        viewModels.liveNotesSharing(userViewModel,goLiveTitle,goLiveDescription)
+                                    },
                     label = { Text("Description") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(600.dp)
                 )
                 Spacer(Modifier.height(12.dp))
-                Text(liveId)
-
+                Text(userViewModel.userId.value)
             }
         }
     }
@@ -1311,6 +1377,7 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
     }
 }
 
+
 @Composable
 fun AppNavigation(){
     val navController=rememberNavController()
@@ -1340,9 +1407,7 @@ fun AppNavigation(){
             FindAllNotes(navController)
         }
         composable ("liveNotesSharing"){
-            LiveNotesSharing(viewModel(),navController)
+            LiveNotesSharing(viewModel(), viewModel(),navController)
         }
     }
 }
-
-
