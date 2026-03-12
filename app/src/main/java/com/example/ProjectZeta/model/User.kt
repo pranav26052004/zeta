@@ -6,5 +6,5 @@ data class User(
 //    var UserName:String,
     var mobileNo:String = "",
     var email:String = "",
-//    var password:String = ""
+    var password:String = ""
 )
