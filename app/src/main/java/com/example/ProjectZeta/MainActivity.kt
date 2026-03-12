@@ -307,11 +307,11 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
         }
     }
     var selectedtabindex by remember { mutableStateOf(0) }
-    var footerr : List<ImageVector> = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.ShoppingCart,
-        Icons.Default.AccountCircle,
+    var footerr : List<Int> = listOf(
+        R.drawable.baseline_home_24,
+        R.drawable.outline_feature_search_24,
+        R.drawable.baseline_local_parking_24,
+        R.drawable.outline_person_24
     )
     var footerindex by remember { mutableStateOf(0) }
     Column(
@@ -320,6 +320,7 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
     ) {
         TabRow(
             selectedTabIndex = selectedtabindex,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             divider = { HorizontalDivider() },
             modifier = Modifier
 //                .padding(top = 150.dp)
@@ -345,7 +346,7 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController:NavController){
                     },
                     icon = {
                         Icon(
-                            imageVector = icon,
+                            painterResource(icon) ,
                             contentDescription = null
                         )
                     }
@@ -815,11 +816,11 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
 
     var selectedtabindex by remember { mutableStateOf(0) }
 
-    var footerr : List<ImageVector> = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.ShoppingCart,
-        Icons.Default.AccountCircle,
+    var footerr : List<Int> = listOf(
+        R.drawable.baseline_home_24,
+        R.drawable.outline_feature_search_24,
+        R.drawable.baseline_local_parking_24,
+        R.drawable.outline_person_24
     )
     var footerindex by remember { mutableStateOf(0) }
 
@@ -956,6 +957,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
     ) {
         TabRow(
             selectedTabIndex = selectedtabindex,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             divider = { HorizontalDivider() },
             modifier = Modifier
 //                .padding(top = 150.dp)
@@ -982,7 +984,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
                     },
                     icon = {
                         Icon(
-                            imageVector = icon,
+                            painterResource(icon),
                             contentDescription = null
                         )
                     }
@@ -998,11 +1000,11 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(),navController:NavContro
 @Composable
 fun UploadNotes(navController:NavController){
     var selectedtabindex by remember { mutableStateOf(0) }
-    var footerr : List<ImageVector> = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.ShoppingCart,
-        Icons.Default.AccountCircle,
+    var footerr : List<Int> = listOf(
+        R.drawable.baseline_home_24,
+        R.drawable.outline_feature_search_24,
+        R.drawable.baseline_local_parking_24,
+        R.drawable.outline_person_24
     )
     var footerindex by remember { mutableStateOf(0) }
     Column (
@@ -1048,6 +1050,7 @@ fun UploadNotes(navController:NavController){
         Card(elevation = CardDefaults.cardElevation(50.dp)) {
             TabRow(
                 selectedTabIndex = selectedtabindex,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 divider = { HorizontalDivider() },
                 modifier = Modifier
 //                .padding(top = 150.dp)
@@ -1074,7 +1077,7 @@ fun UploadNotes(navController:NavController){
                         },
                         icon = {
                             Icon(
-                                imageVector = icon,
+                                painterResource(icon),
                                 contentDescription = null
                             )
                         }
@@ -1127,6 +1130,7 @@ fun FindAllNotes(navController:NavController){
 
         TabRow(
             selectedTabIndex = footerindex,
+
             divider = { HorizontalDivider() },
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
@@ -1166,11 +1170,11 @@ fun FindAllNotes(navController:NavController){
 @Composable
 fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) {
     var selectedtabindex by remember { mutableStateOf(0) }
-    var footerr : List<ImageVector> = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.ShoppingCart,
-        Icons.Default.AccountCircle,
+    var footerr : List<Int> = listOf(
+        R.drawable.baseline_home_24,
+        R.drawable.outline_feature_search_24,
+        R.drawable.baseline_local_parking_24,
+        R.drawable.outline_person_24
     )
     val footerindex by viewModels.footerindex.collectAsState()
     val selectedTab by viewModels.selectedTab.collectAsState()
@@ -1268,6 +1272,7 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
     ) {
         TabRow(
             selectedTabIndex = selectedtabindex,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             divider = { HorizontalDivider() },
             modifier = Modifier
 //                .padding(top = 150.dp)
@@ -1294,7 +1299,7 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
                     },
                     icon = {
                         Icon(
-                            imageVector = icon,
+                            painterResource(icon),
                             contentDescription = null
                         )
                     }
