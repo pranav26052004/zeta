@@ -55,5 +55,32 @@ class RealtimeFirebase {
                 .child(key)
                 .removeValue()
         }
+
+        fun <T> readItem(
+            tableName:String,
+            key:String,
+            clazz:Class<T>,
+            onResult:(T?) -> Unit
+        ){
+            database.child(tableName)
+                .child(key)
+                .addListenerForSingleValueEvent(object: ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if(snapshot.exists()){
+
+                            val item = snapshot.getValue(clazz)
+                            onResult(item)
+
+                        } else {
+                            onResult(null)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        onResult(null)
+                    }
+
+                })
+        }
     }
 }
