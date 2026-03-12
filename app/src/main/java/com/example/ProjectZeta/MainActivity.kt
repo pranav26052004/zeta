@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -33,19 +32,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -67,30 +61,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ProjectZeta.model.Notice
-import androidx.compose.ui.unit.sp
+import com.example.ProjectZeta.ViewModels.UserViewModel
 import com.example.ProjectZeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.projectzeta.Model.ParkingSlot
 import com.example.projectzeta.ViewModels.ReservationViewModel
-import com.google.firebase.database.FirebaseDatabase
-import kotlin.collections.get
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -194,7 +184,7 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel()) {
 @Composable
 fun GreetingPreview() {
     MyApplicationTheme {
-        Greeting("Android")
+        AboutPage()
     }
 }
 
@@ -303,23 +293,23 @@ fun HomeScreen(){
 }
 
 @Composable
-fun SignUpScreen() {
-    var name by remember { mutableStateOf("") }
-    var number by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
+    val nameOfUser by userViewModel.nameOfUser.collectAsState()//remember { mutableStateOf("") }
+    val userPhoneNumber by userViewModel.userPhoneNumber.collectAsState()  //remember { mutableStateOf("") }
+    val userEmail by userViewModel.userEmail.collectAsState()  //remember { mutableStateOf("") }
+    val userPassword by userViewModel.userPassword.collectAsState()  //remember { mutableStateOf("") }
 
     // Error states
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var numberError by remember { mutableStateOf<String?>(null) }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
+    val nameError by userViewModel.nameError.collectAsState() //remember { mutableStateOf<String?>(null) }
+    val numberError by userViewModel.numberError.collectAsState() //remember { mutableStateOf<String?>(null) }
+    val emailError by userViewModel.emailError.collectAsState() //remember { mutableStateOf<String?>(null) }
+    val passwordError by userViewModel.passwordError.collectAsState() //remember { mutableStateOf<String?>(null) }
 
     fun validate(): Boolean {
         var ok = true
 
         // --- Name ---
-        val nameTrim = name.trim()
+        val nameTrim = nameOfUser.trim()
         val nameRegex = Regex("^[A-Za-z][A-Za-z\\s'’-]{1,49}$")
         nameError = when {
             nameTrim.isEmpty() -> { ok = false; "Name is required" }
@@ -328,7 +318,7 @@ fun SignUpScreen() {
         }
 
         // --- Phone Number ---
-        val digitsOnly = number.filter { it.isDigit() }
+        val digitsOnly = userPhoneNumber.filter { it.isDigit() }
         val phoneRegex = Regex("^[6-9]\\d{9}$") // Starts with 6-9 and has exactly 10 digits
 
         numberError = when {
@@ -339,7 +329,7 @@ fun SignUpScreen() {
         }
 
         // --- Email ---
-        val emailTrim = email.trim()
+        val emailTrim = userEmail.trim()
         emailError = when {
             emailTrim.isEmpty() -> { ok = false; "Email is required" }
             !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
@@ -349,7 +339,7 @@ fun SignUpScreen() {
         }
 
         // --- Password ---
-        val pw = password
+        val pw = userPassword
         if (pw.isEmpty()) {
             passwordError = "Password is required"
             ok = false
@@ -394,9 +384,9 @@ fun SignUpScreen() {
 
             // Name
             OutlinedTextField(
-                value = name,
+                value = nameOfUser,
                 onValueChange = {
-                    name = it
+                    nameOfUser = it
                     if (nameError != null) nameError = null // clear as user types
                 },
                 label = { Text("Name") },
@@ -409,9 +399,9 @@ fun SignUpScreen() {
 
             // Phone
             OutlinedTextField(
-                value = number,
+                value = userPhoneNumber,
                 onValueChange = {
-                    number = it
+                    userPhoneNumber = it
                     if (numberError != null) numberError = null
                 },
                 label = { Text("Phone Number") },
@@ -425,9 +415,9 @@ fun SignUpScreen() {
 
             // Email
             OutlinedTextField(
-                value = email,
+                value = userEmail,
                 onValueChange = {
-                    email = it
+                    userEmail = it
                     if (emailError != null) emailError = null
                 },
                 label = { Text("Email Address") },
@@ -442,9 +432,9 @@ fun SignUpScreen() {
 
             // Password
             OutlinedTextField(
-                value = password,
+                value = userPassword,
                 onValueChange = {
-                    password = it
+                    userPassword = it
                     if (passwordError != null) passwordError = null
                 },
                 label = { Text("Password") },
@@ -694,22 +684,22 @@ fun LostAndFoundScreen() {
 }
 
 @Composable
-fun Login(){
-    val username by rememberSaveable { mutableStateOf("") }
-    val password by rememberSaveable { mutableStateOf("") }
+fun Login(userViewModel: UserViewModel = viewModel()){
+    val userEmail by userViewModel.userEmail.collectAsState() //rememberSaveable { mutableStateOf("") }
+    val userPassword by userViewModel.userPassword.collectAsState() //rememberSaveable { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){
         Text("CAMPUS CONNECT", Modifier.padding(bottom = 100.dp),fontWeight = FontWeight.Bold, fontSize = 30.sp)
         OutlinedTextField(
-            value = username,
-            onValueChange = {username},
+            value = userEmail,
+            onValueChange = {userViewModel.userEmail.value = it},
             label = { Text("Enter Username") }
         )
         OutlinedTextField(
-            value = password,
-            onValueChange = {password},
+            value = userPassword,
+            onValueChange = {userPassword},
             label = { Text("Enter Password") }
         )
         Row(Modifier.padding(top = 20.dp)) {
@@ -721,13 +711,15 @@ fun Login(){
 }
 
 @Composable
-fun AboutPage() {
+fun AboutPage(userViewModel: UserViewModel = viewModel()) {
     var context=LocalContext.current
-    var editName by remember { mutableStateOf("Sumanth") }
-    var editMobileNumber by remember { mutableStateOf("9876543210") }
-    var editEmail by remember { mutableStateOf("Sumanth@gmail.com") }
-    var editPassword by remember { mutableStateOf(("********")) }
-    var editConfirmPassword by remember { mutableStateOf(("********")) }
+    val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
+    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState() //remember { mutableStateOf("9876543210") }
+    val editEmail by userViewModel.userEmail.collectAsState() //remember { mutableStateOf("Sumanth@gmail.com") }
+    val editPassword by userViewModel.userPassword.collectAsState() //remember { mutableStateOf(("********")) }
+    var editConfirmPassword by remember { mutableStateOf("") }
+    val passwordVisible by userViewModel.passwordVisible.collectAsState()
+
     var selectedtabindex by remember { mutableStateOf(0) }
 
     var footerr : List<ImageVector> = listOf(
@@ -807,7 +799,19 @@ fun AboutPage() {
             onValueChange = {editPassword=it},
             label = { Text("Password") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val icon =
+                    if(passwordVisible)
+                        Icons.Default.Visibility
+                    else
+                        Icons.Default.VisibilityOff
+
+                IconButton(
+                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
+                ) { Icon(ImageVector = icon, contentDescription = "Toggle Password") }
+            }
         )
         OutlinedTextField(
             value=editConfirmPassword,

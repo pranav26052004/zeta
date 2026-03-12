@@ -5,7 +5,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class RealtimeFirebase {
+class RealtimeFirebaseHelper {
     companion object {
         private val database = FirebaseDatabase.getInstance().reference
         fun <T> readList(

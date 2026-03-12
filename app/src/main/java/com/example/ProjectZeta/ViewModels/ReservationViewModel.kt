@@ -3,7 +3,7 @@ package com.example.projectzeta.ViewModels
 import androidx.lifecycle.ViewModel
 import com.example.ProjectZeta.constants.FirebaseDatabases
 import com.example.projectzeta.Model.ParkingSlot
-import com.example.projectzeta.Repository.RealtimeFirebase
+import com.example.projectzeta.Repository.RealtimeFirebaseHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -52,7 +52,7 @@ class ReservationViewModel : ViewModel(){
 
 //    val tableName:String = "parkingSlots"
     fun loadSlots(){
-        RealtimeFirebase.readList(
+        RealtimeFirebaseHelper.readList(
             tableName = FirebaseDatabases.PARKING_SLOT,//"parkingSlots",
             ParkingSlot::class.java
         ){list-> _slots.value = list}
@@ -63,11 +63,11 @@ class ReservationViewModel : ViewModel(){
     fun reserveWithDb(slot: ParkingSlot, currentUser:String){
         if(slot.available){
             val updatedSlot = slot.copy(available = false, reservedBy = currentUser)
-            RealtimeFirebase.writeItem(FirebaseDatabases.PARKING_SLOT/*"parkingSlots"*/, (slot.parkingId-1).toString(), updatedSlot)
+            RealtimeFirebaseHelper.writeItem(FirebaseDatabases.PARKING_SLOT/*"parkingSlots"*/, (slot.parkingId-1).toString(), updatedSlot)
         } else {
             if(slot.reservedBy == currentUser){
                 val updatedSlot = slot.copy(available = true, reservedBy = "")
-                RealtimeFirebase.writeItem(FirebaseDatabases.PARKING_SLOT/*"parkingSlots"*/, (slot.parkingId-1).toString(), updatedSlot)
+                RealtimeFirebaseHelper.writeItem(FirebaseDatabases.PARKING_SLOT/*"parkingSlots"*/, (slot.parkingId-1).toString(), updatedSlot)
             }
         }
     }
