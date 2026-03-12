@@ -542,6 +542,7 @@ fun SignUpScreen(viewModel: UserViewModel = viewModel(),navController:NavControl
                     if (validate()) {
                         Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
                     }
+                    navController.navigate("login")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -549,7 +550,9 @@ fun SignUpScreen(viewModel: UserViewModel = viewModel(),navController:NavControl
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { }) {
+            TextButton(onClick = {
+                navController.navigate("login")
+            }) {
                 Text("Already have an account? Log In")
             }
         }
