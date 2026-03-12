@@ -9,7 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class UserViewModel: ViewModel()    {
-    val userId = MutableStateFlow<String>("")
+    val userId = MutableStateFlow<String>("1")
 
     val nameOfUser = MutableStateFlow<String>("")
     val userPhoneNumber = MutableStateFlow("")

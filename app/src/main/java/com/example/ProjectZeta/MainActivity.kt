@@ -1168,7 +1168,7 @@ fun FindAllNotes(navController:NavController){
 }
 
 @Composable
-fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) {
+fun LiveNotesSharing(viewModels: LiveNotesSharing,userViewModel: UserViewModel,navController: NavController) {
     var selectedtabindex by remember { mutableStateOf(0) }
     var footerr : List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -1176,9 +1176,11 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
         R.drawable.baseline_local_parking_24,
         R.drawable.outline_person_24
     )
+    var count by remember { mutableStateOf(0) }
     val footerindex by viewModels.footerindex.collectAsState()
     val selectedTab by viewModels.selectedTab.collectAsState()
-    val searchQuery by viewModels.searchQuery.collectAsState()
+     val searchQuery by viewModels.searchQuery.collectAsState()
+//    var searchQuery by remember{mutableStateOf("")}
     val searchTitle by viewModels.searchTitle.collectAsState()
     val searchLiveText by viewModels.searchLiveText.collectAsState()
     val goLiveTitle by viewModels.goLiveTitle.collectAsState()
@@ -1217,9 +1219,14 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+                if(count>0){
+                    viewModels.serachIdinLiveShare(searchQuery)
+                }
+                viewModels.serachIdinLiveShare(searchQuery)
                 Spacer(Modifier.height(12.dp))
                 Button(onClick = {
-
+                    count++
+                    viewModels.serachIdinLiveShare(searchQuery)
                 }, modifier = Modifier.padding(start=140.dp)) {
                     Text("Search")
                 }
@@ -1246,7 +1253,9 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = goLiveTitle,
-                    onValueChange = { viewModels.goLiveTitle.value = it },
+                    onValueChange = {
+                        viewModels.goLiveTitle.value=it
+                    },
                     label = { Text("Live Title") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -1254,15 +1263,17 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
                     value = goLiveDescription,
-                    onValueChange = { viewModels.goLiveDescription.value = it },
+                    onValueChange = {
+                        viewModels.goLiveDescription.value = it
+                        viewModels.liveNotesSharing(userViewModel,goLiveTitle,goLiveDescription)
+                                    },
                     label = { Text("Description") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(600.dp)
                 )
                 Spacer(Modifier.height(12.dp))
-                Text(liveId)
-
+                Text(userViewModel.userId.value)
             }
         }
     }
@@ -1340,7 +1351,7 @@ fun AppNavigation(){
             FindAllNotes(navController)
         }
         composable ("liveNotesSharing"){
-            LiveNotesSharing(viewModel(),navController)
+            LiveNotesSharing(viewModel(), viewModel(),navController)
         }
     }
 }
