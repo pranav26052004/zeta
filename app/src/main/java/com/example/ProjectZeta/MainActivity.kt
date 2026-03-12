@@ -78,8 +78,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ProjectZeta.model.Notice
 import com.example.ProjectZeta.ViewModels.UserViewModel
+import com.example.ProjectZeta.constants.FirebaseDatabases
 import com.example.ProjectZeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.projectzeta.Model.User
+import com.example.projectzeta.Repository.RealtimeFirebaseHelper
 import com.example.projectzeta.ViewModels.ReservationViewModel
 
 class MainActivity : ComponentActivity() {
@@ -96,9 +99,10 @@ class MainActivity : ComponentActivity() {
 //                    )
 //                    parkingScreen()
 //                    HomeScreen()
-                    SignUpScreen()
+//                    SignUpScreen()
 //                    LostAndFoundScreen()
 //                    FindAllNotes()
+                    AboutPage()
                 }
             }
         }
@@ -184,7 +188,10 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel()) {
 @Composable
 fun GreetingPreview() {
     MyApplicationTheme {
-//        AboutPage()
+        AboutPage()
+//        HomeScreen()
+//        LostAndFoundScreen()
+
     }
 }
 
@@ -731,184 +738,197 @@ fun Login(userViewModel: UserViewModel = viewModel()){
     }
 }
 
-//@Composable
-//fun AboutPage(userViewModel: UserViewModel = viewModel()) {
-//    var context=LocalContext.current
-//    val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
-//    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState() //remember { mutableStateOf("9876543210") }
-//    val editEmail by userViewModel.userEmail.collectAsState() //remember { mutableStateOf("Sumanth@gmail.com") }
-//    val editPassword by userViewModel.userPassword.collectAsState() //remember { mutableStateOf(("********")) }
-//    var editConfirmPassword by remember { mutableStateOf("") }
-//    val passwordVisible by userViewModel.passwordVisible.collectAsState()
-//
-//    var selectedtabindex by remember { mutableStateOf(0) }
-//
-//    var footerr : List<ImageVector> = listOf(
-//        Icons.Default.Home,
-//        Icons.Default.Search,
-//        Icons.Default.ShoppingCart,
-//        Icons.Default.AccountCircle,
-//    )
-//    var footerindex by remember { mutableStateOf(0) }
-//
-//
-//    Column (
-//        modifier = Modifier.padding(20.dp),
-//        verticalArrangement = Arrangement.Center,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ){
-//        Image(
-//            painter = painterResource(R.drawable.logout),
-//            modifier = Modifier.padding(start = 300.dp),
-//            contentDescription = null
-//        )
-//
-//        Text("Logout",
-//            modifier = Modifier.padding(start = 300.dp).clickable {
-//                Toast.makeText(context,"Logged out", Toast.LENGTH_SHORT).show()
-//            })
-//    }
-//    Column (
-//        modifier = Modifier.fillMaxSize(),
-//        verticalArrangement = Arrangement.Center,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ){
-//        Text(
-//            text = "Profile",
-//            style = MaterialTheme.typography.headlineMedium,
-//            modifier = Modifier.padding(bottom = 30.dp)
-//        )
-//        Image(
-//            painter = painterResource(R.drawable.outline_person_24),
-//            contentDescription = "Profile Image",
-//            modifier = Modifier
-//                .size(120.dp)
-//                .clip(CircleShape)
-//        )
-//        Spacer(modifier = Modifier.height(30.dp))
-//        Text("Edit Profile",
-//            modifier = Modifier.clickable {
-//                // Handle the click action here, for example, logging a message or updating state
-//                Log.d("ClickableText", "Text clicked!")
-//            })
-//
-//        Spacer(modifier = Modifier.height(30.dp))
-//
-//        OutlinedTextField(
-//            value=editName,
-//            onValueChange = {editName=it},
-//            label = { Text("Name") },
-//            singleLine = true,
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        OutlinedTextField(
-//            value=editMobileNumber,
-//            onValueChange = {editMobileNumber=it},
-//            label = { Text("Mobile Number") },
-//            singleLine = true,
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        OutlinedTextField(
-//            value=editEmail,
-//            onValueChange = {editEmail=it},
-//            label = { Text("Email") },
-//            singleLine = true,
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        OutlinedTextField(
-//            value=editPassword,
-//            onValueChange = {editPassword=it},
-//            label = { Text("Password") },
-//            singleLine = true,
-//            modifier = Modifier.fillMaxWidth(),
-//            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-//            trailingIcon = {
-//                val icon =
-//                    if(passwordVisible)
-//                        Icons.Default.Visibility
-//                    else
-//                        Icons.Default.VisibilityOff
-//
-//                IconButton(
-//                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
-//                ) { Icon(ImageVector = icon, contentDescription = "Toggle Password") }
-//            }
-//        )
-//        OutlinedTextField(
-//            value=editConfirmPassword,
-//            onValueChange = {editConfirmPassword=it},
-//            label = { Text("Confirm Password") },
-//            singleLine = true,
-//            modifier = Modifier.fillMaxWidth()
-//        )
-//        Spacer(modifier = Modifier.height(30.dp))
-//
-//
-//        Row(
-//            modifier = Modifier.padding(30.dp),
-//            horizontalArrangement = Arrangement.SpaceBetween
-//        ){
-//            Button(
-//                onClick = {
-//                    Toast.makeText(context,"Changes Saved", Toast.LENGTH_SHORT).show()
-//                }
-//            ) {
-//                Text("Save changes")
-//            }
-//
-//            Button(
-//                onClick = {},
-//                Modifier.padding(start = 30.dp)
-//            ){
-//                Text("Delete Account")
-//            }
-//
-//        }
-//
-//    }
-//    Column(
-//        modifier = Modifier.fillMaxSize(),
-//        verticalArrangement = Arrangement.Bottom
-//    ) {
-//        TabRow(
-//            selectedTabIndex = selectedtabindex,
-//            divider = { HorizontalDivider() },
-//            modifier = Modifier
-////                .padding(top = 150.dp)
-//                .fillMaxWidth()
-//                .drawBehind {
-//                    val x = size.width / 2f
-//                    drawLine(
-//                        color = Color.Black,
-//                        start = Offset(x, 0f),
-//                        end = Offset(x, size.height),
-//                        strokeWidth = 2.dp.toPx()
-//                    )
-//                }
-//        ) {
-//            footerr.forEachIndexed { index, icon ->
-//                Tab(
-//
-//                    selected = footerindex == index,
-//                    onClick = {
-//                        footerindex = index
-//                        if (index==1) {
-//                            selectedtabindex = 0
-//                        }
-//                    },
-//                    icon = {
-//                        Icon(
-//                            imageVector = icon,
-//                            contentDescription = null
-//                        )
-//                    }
-//                )
-//            }
-//
-//
-//        }
-//    }
-//}
+@Composable
+fun AboutPage(userViewModel: UserViewModel = viewModel()) {
+    var context=LocalContext.current
+    userViewModel.getUserandSetState("412345")
+    val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
+    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState() //remember { mutableStateOf("9876543210") }
+    val editEmail by userViewModel.userEmail.collectAsState() //remember { mutableStateOf("Sumanth@gmail.com") }
+    val editPassword by userViewModel.userPassword.collectAsState() //remember { mutableStateOf(("********")) }
+    var editConfirmPassword by remember { mutableStateOf("") }
+    val passwordVisible by userViewModel.passwordVisible.collectAsState()
+
+    var selectedtabindex by remember { mutableStateOf(0) }
+
+    var footerr : List<ImageVector> = listOf(
+        Icons.Default.Home,
+        Icons.Default.Search,
+        Icons.Default.ShoppingCart,
+        Icons.Default.AccountCircle,
+    )
+    var footerindex by remember { mutableStateOf(0) }
+
+
+    Column (
+        modifier = Modifier.padding(20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Image(
+            painter = painterResource(R.drawable.logout),
+            modifier = Modifier.padding(start = 300.dp),
+            contentDescription = null
+        )
+
+        Text("Logout",
+            modifier = Modifier.padding(start = 300.dp).clickable {
+                Toast.makeText(context,"Logged out", Toast.LENGTH_SHORT).show()
+            })
+    }
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Text(
+            text = "Profile",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 30.dp)
+        )
+        Image(
+            painter = painterResource(R.drawable.outline_person_24),
+            contentDescription = "Profile Image",
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+        Text("Edit Profile",
+            modifier = Modifier.clickable {
+                // Handle the click action here, for example, logging a message or updating state
+                Log.d("ClickableText", "Text clicked!")
+            })
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        OutlinedTextField(
+            value=editName,
+            onValueChange = {userViewModel.nameOfUser.value=it},
+            label = { Text("Name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editMobileNumber,
+            onValueChange = {userViewModel.userPhoneNumber.value = it},
+            label = { Text("Mobile Number") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editEmail,
+            onValueChange = {userViewModel.userEmail.value=it},
+            label = { Text("Email") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editPassword,
+            onValueChange = {userViewModel.userPassword.value=it},
+            label = { Text("Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val icon =
+                    if(passwordVisible)
+                        Icons.Default.Visibility
+                    else
+                        Icons.Default.VisibilityOff
+
+                IconButton(
+                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
+                ) { Icon(imageVector = icon, contentDescription = "Toggle Password") }
+            }
+        )
+        OutlinedTextField(
+            value=editConfirmPassword,
+            onValueChange = {editConfirmPassword=it},
+            label = { Text("Confirm Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                val icon =
+                    if(passwordVisible)
+                        Icons.Default.Visibility
+                    else
+                        Icons.Default.VisibilityOff
+
+                IconButton(
+                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
+                ) { Icon(imageVector = icon, contentDescription = "Toggle Password") }
+            }
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+
+
+        Row(
+            modifier = Modifier.padding(30.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Button(
+                onClick = {
+                    Toast.makeText(context,"Changes Saved", Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text("Save changes")
+            }
+
+            Button(
+                onClick = {},
+                Modifier.padding(start = 30.dp)
+            ){
+                Text("Delete Account")
+            }
+
+        }
+
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        TabRow(
+            selectedTabIndex = selectedtabindex,
+            divider = { HorizontalDivider() },
+            modifier = Modifier
+//                .padding(top = 150.dp)
+                .fillMaxWidth()
+                .drawBehind {
+                    val x = size.width / 2f
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+        ) {
+            footerr.forEachIndexed { index, icon ->
+                Tab(
+
+                    selected = footerindex == index,
+                    onClick = {
+                        footerindex = index
+                        if (index==1) {
+                            selectedtabindex = 0
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
+
+
+        }
+    }
+}
 
 
 @Composable

@@ -1,5 +1,7 @@
 package com.example.projectzeta.Repository
 
+import com.example.projectzeta.Model.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -82,5 +84,72 @@ class RealtimeFirebaseHelper {
 
                 })
         }
+
+        fun <T> readItemUsingProperty(
+            tableName:String,
+            property:String,
+            value:String,
+            clazz:Class<T>,
+            onResult:(T?) -> Unit
+        ){
+            database.child(tableName)
+                .orderByChild(property)
+                .equalTo(value)
+                .addListenerForSingleValueEvent(object: ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if(snapshot.exists()){
+
+                            for(child in snapshot.children){
+                                val item = child.getValue(clazz)
+                                onResult(item)
+                                return
+                            }
+
+                        } else {
+                            onResult(null)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        onResult(null)
+                    }
+
+                })
+        }
+
+        fun registerUser(
+            email:String,
+            password:String,
+            fullName:String,
+            mobileNo:String
+        ){
+            val auth = FirebaseAuth.getInstance()
+
+            auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener{task->
+
+                if(task.isSuccessful){
+                    val uid = auth.currentUser!!.uid
+
+                    val user = User(
+                        userId = uid,
+                        fullName,
+                        mobileNo,
+                        email
+                    )
+
+                    RealtimeFirebaseHelper.writeItem("userTable", uid, user)
+
+                }
+
+            }
+        }
+
+        fun updateUserEmail(uid:String, newEmail:String){
+            database.child("usersTable")
+                .child(uid)
+                .child("email")
+                .setValue(newEmail)
+        }
+
     }
 }
