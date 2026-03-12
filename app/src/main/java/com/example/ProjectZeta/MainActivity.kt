@@ -96,9 +96,9 @@ class MainActivity : ComponentActivity() {
 //                    )
 //                    parkingScreen()
 //                    HomeScreen()
-//                    SignUpScreen()
+                    SignUpScreen()
 //                    LostAndFoundScreen()
-                    FindAllNotes()
+//                    FindAllNotes()
                 }
             }
         }
@@ -184,7 +184,7 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel()) {
 @Composable
 fun GreetingPreview() {
     MyApplicationTheme {
-        AboutPage()
+//        AboutPage()
     }
 }
 
@@ -293,55 +293,56 @@ fun HomeScreen(){
 }
 
 @Composable
-fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
-    val nameOfUser by userViewModel.nameOfUser.collectAsState()//remember { mutableStateOf("") }
-    val userPhoneNumber by userViewModel.userPhoneNumber.collectAsState()  //remember { mutableStateOf("") }
-    val userEmail by userViewModel.userEmail.collectAsState()  //remember { mutableStateOf("") }
-    val userPassword by userViewModel.userPassword.collectAsState()  //remember { mutableStateOf("") }
+fun SignUpScreen(viewModel: UserViewModel = viewModel()) {
 
-    // Error states
-    val nameError by userViewModel.nameError.collectAsState() //remember { mutableStateOf<String?>(null) }
-    val numberError by userViewModel.numberError.collectAsState() //remember { mutableStateOf<String?>(null) }
-    val emailError by userViewModel.emailError.collectAsState() //remember { mutableStateOf<String?>(null) }
-    val passwordError by userViewModel.passwordError.collectAsState() //remember { mutableStateOf<String?>(null) }
+    val name by viewModel.nameOfUser.collectAsState()
+    val number by viewModel.userPhoneNumber.collectAsState()
+    val email by viewModel.userEmail.collectAsState()
+    val password by viewModel.userPassword.collectAsState()
+    val nameError by viewModel.nameError.collectAsState()
+    val numberError by viewModel.numberError.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+    val passwordError by viewModel.passwordError.collectAsState()
+    val passwordVisible by viewModel.passwordVisible.collectAsState()
+    val confirmPassword by viewModel.confirmPassword.collectAsState()
+    val confirmPasswordError by viewModel.confirmPasswordError.collectAsState()
 
     fun validate(): Boolean {
         var ok = true
 
-        // --- Name ---
-        val nameTrim = nameOfUser.trim()
-        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s'’-]{1,49}$")
-        nameError = when {
+        // Name
+        val nameTrim = name.trim()
+        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
+        viewModel.nameError.value = when {
             nameTrim.isEmpty() -> { ok = false; "Name is required" }
             !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
-            else -> null
+            else -> ""
         }
 
-        // --- Phone Number ---
-        val digitsOnly = userPhoneNumber.filter { it.isDigit() }
-        val phoneRegex = Regex("^[6-9]\\d{9}$") // Starts with 6-9 and has exactly 10 digits
-
-        numberError = when {
+        // Phone
+        val digitsOnly = number.filter { it.isDigit() }
+        val phoneRegex = Regex("^[6-9]\\d{9}$")
+        viewModel.numberError.value = when {
             digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
             digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
             !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
-            else -> null
+            else -> ""
         }
 
-        // --- Email ---
-        val emailTrim = userEmail.trim()
-        emailError = when {
+        // Email
+        val emailTrim = email.trim()
+        viewModel.emailError.value = when {
             emailTrim.isEmpty() -> { ok = false; "Email is required" }
             !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
                 ok = false; "Enter a valid email address"
             }
-            else -> null
+            else -> ""
         }
 
-        // --- Password ---
-        val pw = userPassword
+        // Password
+        val pw = password
         if (pw.isEmpty()) {
-            passwordError = "Password is required"
+            viewModel.passwordError.value = "Password is required"
             ok = false
         } else {
             val rules = listOf(
@@ -352,10 +353,17 @@ fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
                 Regex("[^A-Za-z0-9]") to "one special character"
             )
             val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(pw) }.map { it.second }
-            passwordError = if (failed.isNotEmpty()) {
-                ok = false
-                "Password must include: ${failed.joinToString(", ")}"
-            } else null
+            viewModel.passwordError.value = if (failed.isNotEmpty()) {
+                ok = false; "Password must include: ${failed.joinToString(", ")}"
+            } else ""
+        }
+
+        // Confirm Password
+        val confirmPw = confirmPassword
+        viewModel.confirmPasswordError.value = when {
+            confirmPw.isEmpty() -> { ok = false; "Please confirm your password" }
+            confirmPw != password -> { ok = false; "Passwords do not match" }
+            else -> ""
         }
 
         return ok
@@ -364,7 +372,8 @@ fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxSize().background(color = Color(0xFFBCBFE8))
+                .fillMaxSize()
+                .background(color = Color(0xFFE1E6FF))
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -384,30 +393,30 @@ fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
 
             // Name
             OutlinedTextField(
-                value = nameOfUser,
+                value = name,
                 onValueChange = {
-                    nameOfUser = it
-                    if (nameError != null) nameError = null // clear as user types
+                    viewModel.nameOfUser.value = it
+                    if (nameError.isNotEmpty()) viewModel.nameError.value = ""
                 },
                 label = { Text("Name") },
                 singleLine = true,
-                isError = nameError != null,
-                supportingText = { if (nameError != null) Text(nameError!!) },
+                isError = nameError.isNotEmpty(),
+                supportingText = { if (nameError.isNotEmpty()) Text(nameError) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             // Phone
             OutlinedTextField(
-                value = userPhoneNumber,
+                value = number,
                 onValueChange = {
-                    userPhoneNumber = it
-                    if (numberError != null) numberError = null
+                    viewModel.userPhoneNumber.value = it.filter { c -> c.isDigit() }
+                    if (numberError.isNotEmpty()) viewModel.numberError.value = ""
                 },
                 label = { Text("Phone Number") },
                 singleLine = true,
-                isError = numberError != null,
-                supportingText = { if (numberError != null) Text(numberError!!) },
+                isError = numberError.isNotEmpty(),
+                supportingText = { if (numberError.isNotEmpty()) Text(numberError) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -415,16 +424,15 @@ fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
 
             // Email
             OutlinedTextField(
-                value = userEmail,
+                value = email,
                 onValueChange = {
-                    userEmail = it
-                    if (emailError != null) emailError = null
+                    viewModel.userEmail.value = it
+                    if (emailError.isNotEmpty()) viewModel.emailError.value = ""
                 },
                 label = { Text("Email Address") },
                 singleLine = true,
-                isError = emailError != null,
-                supportingText = { if (emailError != null) Text(emailError!!) },
-                // This provides the @ and . buttons on the keyboard
+                isError = emailError.isNotEmpty(),
+                supportingText = { if (emailError.isNotEmpty()) Text(emailError) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -432,29 +440,42 @@ fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
 
             // Password
             OutlinedTextField(
-                value = userPassword,
+                value = password,
                 onValueChange = {
-                    userPassword = it
-                    if (passwordError != null) passwordError = null
+                    viewModel.userPassword.value = it
+                    if (passwordError.isNotEmpty()) viewModel.passwordError.value = ""
                 },
                 label = { Text("Password") },
                 singleLine = true,
-                isError = passwordError != null,
-                supportingText = {
-                    if (passwordError != null) Text(passwordError!!)
-                },
+                isError = passwordError.isNotEmpty(),
+                supportingText = { if (passwordError.isNotEmpty()) Text(passwordError) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Confirm Password
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = {
+                    viewModel.confirmPassword.value = it
+                    if (confirmPasswordError.isNotEmpty()) viewModel.confirmPasswordError.value = ""
+                },
+                label = { Text("Confirm Password") },
+                singleLine = true,
+                isError = confirmPasswordError.isNotEmpty(),
+                supportingText = { if (confirmPasswordError.isNotEmpty()) Text(confirmPasswordError) },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                modifier = Modifier.fillMaxWidth()
+            )
+
             val context = LocalContext.current
             Button(
                 onClick = {
                     if (validate()) {
                         Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
-                        // Proceed to next screen (Login)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -463,7 +484,7 @@ fun SignUpScreen(userViewModel: UserViewModel = viewModel()) {
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = {  }) {
+            TextButton(onClick = { }) {
                 Text("Already have an account? Log In")
             }
         }
@@ -710,184 +731,184 @@ fun Login(userViewModel: UserViewModel = viewModel()){
     }
 }
 
-@Composable
-fun AboutPage(userViewModel: UserViewModel = viewModel()) {
-    var context=LocalContext.current
-    val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
-    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState() //remember { mutableStateOf("9876543210") }
-    val editEmail by userViewModel.userEmail.collectAsState() //remember { mutableStateOf("Sumanth@gmail.com") }
-    val editPassword by userViewModel.userPassword.collectAsState() //remember { mutableStateOf(("********")) }
-    var editConfirmPassword by remember { mutableStateOf("") }
-    val passwordVisible by userViewModel.passwordVisible.collectAsState()
-
-    var selectedtabindex by remember { mutableStateOf(0) }
-
-    var footerr : List<ImageVector> = listOf(
-        Icons.Default.Home,
-        Icons.Default.Search,
-        Icons.Default.ShoppingCart,
-        Icons.Default.AccountCircle,
-    )
-    var footerindex by remember { mutableStateOf(0) }
-
-
-    Column (
-        modifier = Modifier.padding(20.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Image(
-            painter = painterResource(R.drawable.logout),
-            modifier = Modifier.padding(start = 300.dp),
-            contentDescription = null
-        )
-
-        Text("Logout",
-            modifier = Modifier.padding(start = 300.dp).clickable {
-                Toast.makeText(context,"Logged out", Toast.LENGTH_SHORT).show()
-            })
-    }
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text(
-            text = "Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 30.dp)
-        )
-        Image(
-            painter = painterResource(R.drawable.outline_person_24),
-            contentDescription = "Profile Image",
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-        )
-        Spacer(modifier = Modifier.height(30.dp))
-        Text("Edit Profile",
-            modifier = Modifier.clickable {
-                // Handle the click action here, for example, logging a message or updating state
-                Log.d("ClickableText", "Text clicked!")
-            })
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        OutlinedTextField(
-            value=editName,
-            onValueChange = {editName=it},
-            label = { Text("Name") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value=editMobileNumber,
-            onValueChange = {editMobileNumber=it},
-            label = { Text("Mobile Number") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value=editEmail,
-            onValueChange = {editEmail=it},
-            label = { Text("Email") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value=editPassword,
-            onValueChange = {editPassword=it},
-            label = { Text("Password") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val icon =
-                    if(passwordVisible)
-                        Icons.Default.Visibility
-                    else
-                        Icons.Default.VisibilityOff
-
-                IconButton(
-                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
-                ) { Icon(ImageVector = icon, contentDescription = "Toggle Password") }
-            }
-        )
-        OutlinedTextField(
-            value=editConfirmPassword,
-            onValueChange = {editConfirmPassword=it},
-            label = { Text("Confirm Password") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(30.dp))
-
-
-        Row(
-            modifier = Modifier.padding(30.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Button(
-                onClick = {
-                    Toast.makeText(context,"Changes Saved", Toast.LENGTH_SHORT).show()
-                }
-            ) {
-                Text("Save changes")
-            }
-
-            Button(
-                onClick = {},
-                Modifier.padding(start = 30.dp)
-            ){
-                Text("Delete Account")
-            }
-
-        }
-
-    }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        TabRow(
-            selectedTabIndex = selectedtabindex,
-            divider = { HorizontalDivider() },
-            modifier = Modifier
-//                .padding(top = 150.dp)
-                .fillMaxWidth()
-                .drawBehind {
-                    val x = size.width / 2f
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x, 0f),
-                        end = Offset(x, size.height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-        ) {
-            footerr.forEachIndexed { index, icon ->
-                Tab(
-
-                    selected = footerindex == index,
-                    onClick = {
-                        footerindex = index
-                        if (index==1) {
-                            selectedtabindex = 0
-                        }
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
-
-        }
-    }
-}
+//@Composable
+//fun AboutPage(userViewModel: UserViewModel = viewModel()) {
+//    var context=LocalContext.current
+//    val editName by userViewModel.nameOfUser.collectAsState() //remember { mutableStateOf("Sumanth") }
+//    val editMobileNumber by userViewModel.userPhoneNumber.collectAsState() //remember { mutableStateOf("9876543210") }
+//    val editEmail by userViewModel.userEmail.collectAsState() //remember { mutableStateOf("Sumanth@gmail.com") }
+//    val editPassword by userViewModel.userPassword.collectAsState() //remember { mutableStateOf(("********")) }
+//    var editConfirmPassword by remember { mutableStateOf("") }
+//    val passwordVisible by userViewModel.passwordVisible.collectAsState()
+//
+//    var selectedtabindex by remember { mutableStateOf(0) }
+//
+//    var footerr : List<ImageVector> = listOf(
+//        Icons.Default.Home,
+//        Icons.Default.Search,
+//        Icons.Default.ShoppingCart,
+//        Icons.Default.AccountCircle,
+//    )
+//    var footerindex by remember { mutableStateOf(0) }
+//
+//
+//    Column (
+//        modifier = Modifier.padding(20.dp),
+//        verticalArrangement = Arrangement.Center,
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ){
+//        Image(
+//            painter = painterResource(R.drawable.logout),
+//            modifier = Modifier.padding(start = 300.dp),
+//            contentDescription = null
+//        )
+//
+//        Text("Logout",
+//            modifier = Modifier.padding(start = 300.dp).clickable {
+//                Toast.makeText(context,"Logged out", Toast.LENGTH_SHORT).show()
+//            })
+//    }
+//    Column (
+//        modifier = Modifier.fillMaxSize(),
+//        verticalArrangement = Arrangement.Center,
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ){
+//        Text(
+//            text = "Profile",
+//            style = MaterialTheme.typography.headlineMedium,
+//            modifier = Modifier.padding(bottom = 30.dp)
+//        )
+//        Image(
+//            painter = painterResource(R.drawable.outline_person_24),
+//            contentDescription = "Profile Image",
+//            modifier = Modifier
+//                .size(120.dp)
+//                .clip(CircleShape)
+//        )
+//        Spacer(modifier = Modifier.height(30.dp))
+//        Text("Edit Profile",
+//            modifier = Modifier.clickable {
+//                // Handle the click action here, for example, logging a message or updating state
+//                Log.d("ClickableText", "Text clicked!")
+//            })
+//
+//        Spacer(modifier = Modifier.height(30.dp))
+//
+//        OutlinedTextField(
+//            value=editName,
+//            onValueChange = {editName=it},
+//            label = { Text("Name") },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//        OutlinedTextField(
+//            value=editMobileNumber,
+//            onValueChange = {editMobileNumber=it},
+//            label = { Text("Mobile Number") },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//        OutlinedTextField(
+//            value=editEmail,
+//            onValueChange = {editEmail=it},
+//            label = { Text("Email") },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//        OutlinedTextField(
+//            value=editPassword,
+//            onValueChange = {editPassword=it},
+//            label = { Text("Password") },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth(),
+//            visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+//            trailingIcon = {
+//                val icon =
+//                    if(passwordVisible)
+//                        Icons.Default.Visibility
+//                    else
+//                        Icons.Default.VisibilityOff
+//
+//                IconButton(
+//                    onClick = {userViewModel.passwordVisible.value = !passwordVisible}
+//                ) { Icon(ImageVector = icon, contentDescription = "Toggle Password") }
+//            }
+//        )
+//        OutlinedTextField(
+//            value=editConfirmPassword,
+//            onValueChange = {editConfirmPassword=it},
+//            label = { Text("Confirm Password") },
+//            singleLine = true,
+//            modifier = Modifier.fillMaxWidth()
+//        )
+//        Spacer(modifier = Modifier.height(30.dp))
+//
+//
+//        Row(
+//            modifier = Modifier.padding(30.dp),
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ){
+//            Button(
+//                onClick = {
+//                    Toast.makeText(context,"Changes Saved", Toast.LENGTH_SHORT).show()
+//                }
+//            ) {
+//                Text("Save changes")
+//            }
+//
+//            Button(
+//                onClick = {},
+//                Modifier.padding(start = 30.dp)
+//            ){
+//                Text("Delete Account")
+//            }
+//
+//        }
+//
+//    }
+//    Column(
+//        modifier = Modifier.fillMaxSize(),
+//        verticalArrangement = Arrangement.Bottom
+//    ) {
+//        TabRow(
+//            selectedTabIndex = selectedtabindex,
+//            divider = { HorizontalDivider() },
+//            modifier = Modifier
+////                .padding(top = 150.dp)
+//                .fillMaxWidth()
+//                .drawBehind {
+//                    val x = size.width / 2f
+//                    drawLine(
+//                        color = Color.Black,
+//                        start = Offset(x, 0f),
+//                        end = Offset(x, size.height),
+//                        strokeWidth = 2.dp.toPx()
+//                    )
+//                }
+//        ) {
+//            footerr.forEachIndexed { index, icon ->
+//                Tab(
+//
+//                    selected = footerindex == index,
+//                    onClick = {
+//                        footerindex = index
+//                        if (index==1) {
+//                            selectedtabindex = 0
+//                        }
+//                    },
+//                    icon = {
+//                        Icon(
+//                            imageVector = icon,
+//                            contentDescription = null
+//                        )
+//                    }
+//                )
+//            }
+//
+//
+//        }
+//    }
+//}
 
 
 @Composable

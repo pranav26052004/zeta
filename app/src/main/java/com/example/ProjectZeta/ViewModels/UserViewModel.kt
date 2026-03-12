@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 class UserViewModel: ViewModel()    {
 
     val nameOfUser = MutableStateFlow<String>("")
-    val userPhoneNumber = MutableStateFlow<Int>(0)
+    val userPhoneNumber = MutableStateFlow("")
 
     val userEmail = MutableStateFlow<String>("")
 
@@ -27,5 +27,7 @@ class UserViewModel: ViewModel()    {
 
     val passwordVisible = MutableStateFlow<Boolean>(false)
 
+    val confirmPassword = MutableStateFlow("")
+    val confirmPasswordError = MutableStateFlow("")
 
 }
