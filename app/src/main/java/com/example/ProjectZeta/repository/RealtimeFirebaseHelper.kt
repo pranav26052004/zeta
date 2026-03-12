@@ -116,39 +116,5 @@ class RealtimeFirebaseHelper {
                 })
         }
 
-        fun registerUser(
-            email:String,
-            password:String,
-            fullName:String,
-            mobileNo:String
-        ){
-            val auth = FirebaseAuth.getInstance()
-
-            auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener{task->
-
-                if(task.isSuccessful){
-                    val uid = auth.currentUser!!.uid
-
-                    val user = User(
-                        userId = uid,
-                        fullName,
-                        mobileNo,
-                        email
-                    )
-
-                    RealtimeFirebaseHelper.writeItem("userTable", uid, user)
-
-                }
-
-            }
-        }
-
-        fun updateUserEmail(uid:String, newEmail:String){
-            database.child("usersTable")
-                .child(uid)
-                .child("email")
-                .setValue(newEmail)
-        }
-
     }
 }

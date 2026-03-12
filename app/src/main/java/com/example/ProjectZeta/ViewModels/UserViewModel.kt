@@ -9,7 +9,9 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class UserViewModel: ViewModel()    {
-    val userId = MutableStateFlow<String>("1")
+
+    val userId = MutableStateFlow<String>("")
+    val savable = MutableStateFlow(false)
 
     val nameOfUser = MutableStateFlow<String>("")
     val userPhoneNumber = MutableStateFlow("")
@@ -35,49 +37,20 @@ class UserViewModel: ViewModel()    {
     fun getUserandSetState(value:String){
         RealtimeFirebaseHelper.readItemUsingProperty(FirebaseDatabases.USER_TABLE, "mobileNo", value, User::class.java){user->
             if(user!=null){
+                Log.d("TAG", user.toString())
                 userId.value = user.userId
                 nameOfUser.value = user.fullName
                 userEmail.value = user.email
                 userPhoneNumber.value = user.mobileNo
+                userPassword.value = user.password
             } else {
                 Log.d("TAG", "User is null!!!")
             }
         }
     }
 
-    fun updateProfile(fullName:String, mobileNo:String){
-
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-
-        val user = User(
-            uid,
-            fullName,
-            mobileNo,
-            email = FirebaseAuth.getInstance().currentUser!!.email!!
-        )
-
-        RealtimeFirebaseHelper.writeItem("usersTable", uid, user)
-
-    }
-
-    fun changePassword(newPassword:String){
-        val user = FirebaseAuth.getInstance().currentUser
-
-        user?.updatePassword(newPassword)
-
-    }
-
-    fun changeEmail(newEmail:String){
-        val user = FirebaseAuth.getInstance().currentUser
-        val uid = user!!.uid
-
-        user.verifyBeforeUpdateEmail(newEmail)?.addOnSuccessListener { task->
-            RealtimeFirebaseHelper.updateUserEmail(uid, newEmail)
-        }
-    }
-
-    fun deleteUserAccount(key: String){
-        RealtimeFirebaseHelper.deleteItem(FirebaseDatabases.USER_TABLE, key)
+    fun updateUser(user:User){
+        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.USER_TABLE, user.userId, user)
     }
 
 }
