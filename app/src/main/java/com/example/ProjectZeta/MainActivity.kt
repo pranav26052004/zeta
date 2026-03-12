@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.annotation.SuppressLint
 import android.graphics.drawable.Icon
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -40,7 +41,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -716,3 +719,262 @@ fun Login(){
         Button(onClick = {}, Modifier.padding(top = 20.dp)) {Text("Login") }
     }
 }
+
+@Composable
+fun AboutPage() {
+    var context=LocalContext.current
+    var editName by remember { mutableStateOf("Sumanth") }
+    var editMobileNumber by remember { mutableStateOf("9876543210") }
+    var editEmail by remember { mutableStateOf("Sumanth@gmail.com") }
+    var editPassword by remember { mutableStateOf(("********")) }
+    var editConfirmPassword by remember { mutableStateOf(("********")) }
+    var selectedtabindex by remember { mutableStateOf(0) }
+
+    var footerr : List<ImageVector> = listOf(
+        Icons.Default.Home,
+        Icons.Default.Search,
+        Icons.Default.ShoppingCart,
+        Icons.Default.AccountCircle,
+    )
+    var footerindex by remember { mutableStateOf(0) }
+
+
+    Column (
+        modifier = Modifier.padding(20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Image(
+            painter = painterResource(R.drawable.logout),
+            modifier = Modifier.padding(start = 300.dp),
+            contentDescription = null
+        )
+
+        Text("Logout",
+            modifier = Modifier.padding(start = 300.dp).clickable {
+                Toast.makeText(context,"Logged out", Toast.LENGTH_SHORT).show()
+            })
+    }
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Text(
+            text = "Profile",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 30.dp)
+        )
+        Image(
+            painter = painterResource(R.drawable.outline_person_24),
+            contentDescription = "Profile Image",
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+        Text("Edit Profile",
+            modifier = Modifier.clickable {
+                // Handle the click action here, for example, logging a message or updating state
+                Log.d("ClickableText", "Text clicked!")
+            })
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        OutlinedTextField(
+            value=editName,
+            onValueChange = {editName=it},
+            label = { Text("Name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editMobileNumber,
+            onValueChange = {editMobileNumber=it},
+            label = { Text("Mobile Number") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editEmail,
+            onValueChange = {editEmail=it},
+            label = { Text("Email") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editPassword,
+            onValueChange = {editPassword=it},
+            label = { Text("Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value=editConfirmPassword,
+            onValueChange = {editConfirmPassword=it},
+            label = { Text("Confirm Password") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+
+
+        Row(
+            modifier = Modifier.padding(30.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Button(
+                onClick = {
+                    Toast.makeText(context,"Changes Saved", Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Text("Save changes")
+            }
+//            Spacer(modifier = Modifier.height(30.dp))
+
+            Button(
+                onClick = {},
+                Modifier.padding(start = 30.dp)
+            ){
+                Text("Delete Account")
+            }
+
+        }
+
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        TabRow(
+            selectedTabIndex = selectedtabindex,
+            divider = { HorizontalDivider() },
+            modifier = Modifier
+//                .padding(top = 150.dp)
+                .fillMaxWidth()
+                .drawBehind {
+                    val x = size.width / 2f
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
+        ) {
+            footerr.forEachIndexed { index, icon ->
+                Tab(
+
+                    selected = footerindex == index,
+                    onClick = {
+                        footerindex = index
+                        if (index==1) {
+                            selectedtabindex = 0
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
+
+
+        }
+    }
+}
+
+
+@Composable
+fun UploadNotes(){
+    var selectedtabindex by remember { mutableStateOf(0) }
+    var footerr : List<ImageVector> = listOf(
+        Icons.Default.Home,
+        Icons.Default.Search,
+        Icons.Default.ShoppingCart,
+        Icons.Default.AccountCircle,
+    )
+    var footerindex by remember { mutableStateOf(0) }
+    Column (
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+
+        LazyColumn(modifier = Modifier.height(700.dp)) {
+            stickyHeader {
+                Text(
+                    text = "Upload Notes",
+                    fontSize = 50.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.LightGray)
+                        .padding(20.dp)
+                )
+            }
+            items(100) { item ->
+                Card {
+                    Text("Item: $item", modifier = Modifier.fillMaxWidth())
+                }
+                Spacer(modifier = Modifier.height(15.dp))
+
+
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = {}) {
+                Icon(imageVector = Icons.Default.Add,contentDescription = null)
+            }
+
+        }
+
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Card(elevation = CardDefaults.cardElevation(50.dp)) {
+            TabRow(
+                selectedTabIndex = selectedtabindex,
+                divider = { HorizontalDivider() },
+                modifier = Modifier
+//                .padding(top = 150.dp)
+                    .fillMaxWidth()
+                    .drawBehind {
+                        val x = size.width / 2f
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(x, 0f),
+                            end = Offset(x, size.height),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
+            ) {
+                footerr.forEachIndexed { index, icon ->
+                    Tab(
+
+                        selected = footerindex == index,
+                        onClick = {
+                            footerindex = index
+                            if (index==1) {
+                                selectedtabindex = 0
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
