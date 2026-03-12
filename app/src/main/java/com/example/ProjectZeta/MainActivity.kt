@@ -1304,10 +1304,6 @@ fun LiveNotesSharing(viewModels: LiveNotesSharing,navController: NavController) 
 }
 
 @Composable
-fun BottomTab(viewModels: LiveNotesSharing){
-
-}
-@Composable
 fun AppNavigation(){
     val navController=rememberNavController()
     NavHost(navController = navController, startDestination = "login") {
