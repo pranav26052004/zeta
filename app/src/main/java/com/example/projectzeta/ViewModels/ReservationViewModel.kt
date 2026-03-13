@@ -23,15 +23,18 @@ class ReservationViewModel : ViewModel(){
     }
 
     val slots: StateFlow<List<ParkingSlot>> = _slots
+    val count = MutableStateFlow(0)
 
     fun reserveWithDb(slot: ParkingSlot, currentUser:String){
-        if(slot.available){
+        if(slot.available && count.value==0){
             val updatedSlot = slot.copy(available = false, reservedBy = currentUser)
             RealtimeFirebaseHelper.writeItem(FirebaseDatabases.PARKING_SLOT/*"parkingSlots"*/, (slot.parkingId-1).toString(), updatedSlot)
+            count.value++
         } else {
             if(slot.reservedBy == currentUser){
                 val updatedSlot = slot.copy(available = true, reservedBy = "")
                 RealtimeFirebaseHelper.writeItem(FirebaseDatabases.PARKING_SLOT/*"parkingSlots"*/, (slot.parkingId-1).toString(), updatedSlot)
+                count.value--
             }
         }
     }

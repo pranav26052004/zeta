@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.se.omapi.Session
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -88,6 +89,7 @@ import com.example.projectzeta.ViewModels.UserViewModel
 import com.example.projectzeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.projectzeta.Model.User
+import com.example.projectzeta.SessionManager
 import com.example.projectzeta.ViewModels.FoundViewModel
 import com.example.projectzeta.ViewModels.LostViewModel
 import com.example.projectzeta.ViewModels.ReservationViewModel
@@ -98,17 +100,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val session = SessionManager(this)
+            val loggedUser = session.getLoggedInUser()
+
+            val startDestination = if(loggedUser!=null) "homeScreen" else "login"
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    Greeting(
-//                        name = "Android",
-//                        modifier = Modifier.padding(innerPadding)
-//                    )
-//                    parkingScreen(viewModel(),rememberNavController())
-//                    HomeScreen(viewModel(),rememberNavController())
-//                   AboutPage(viewModel(),rememberNavController())
-//                    Login(viewModel(),rememberNavController())
-                    AppNavigation()
+                   AppNavigation(startDestination)
                 }
             }
         }
@@ -116,19 +114,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Composable
 fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: NavController) {
 
     val slots by viewModel.slots.collectAsState()
     val userViewModel: UserViewModel = viewModel()
-    val currentUser = userViewModel.nameOfUser.collectAsState()
+    val session = SessionManager(LocalContext.current)
+    userViewModel.getUserandSetState(session.getLoggedInUser())
 
     var footerindex by remember { mutableStateOf(0) }
     val footerr: List<Int> = listOf(
@@ -137,12 +128,10 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
         R.drawable.baseline_local_parking_24,
         R.drawable.outline_person_24
     )
-    //will be the current users username
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Column(
             Modifier
-                .fillMaxSize()
-                .padding(20.dp),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -159,7 +148,7 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
                                 .height(65.dp)
                                 .background(color)
                                 .clickable {
-                                    viewModel.reserveWithDb(slot, currentUser.value)
+                                    viewModel.reserveWithDb(slot, userViewModel.nameOfUser.value)
                                     if (slot.available) {
                                         color = Color.Green
                                     } else {
@@ -176,7 +165,7 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
                                 tint = Color.Magenta
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text("Id: ${slot.parkingId}", color = Color.White)
+                            Text("Slot: ${slot.parkingId}", color = Color.White)
                         }
                     }
                 }
@@ -225,7 +214,6 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
                 }
             }
             Spacer(Modifier.height(18.dp))
-            Column { Text("Footer Comes Here") }
             Column() {
                 TabRow(
                     selectedTabIndex = footerindex,
@@ -280,17 +268,20 @@ fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: N
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     MyApplicationTheme {
-        AppNavigation()
+//        AppNavigation()
     }
 }
 
 @Composable
 fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavController) {
     val userViewModel: UserViewModel=viewModel()
+    val session = SessionManager(LocalContext.current)
+    userViewModel.getUserandSetState(session.getLoggedInUser())
     val userName by userViewModel.nameOfUser.collectAsState()
     var selectedtabindex by remember { mutableStateOf(0) }
     val footerr: List<Int> = listOf(
@@ -407,7 +398,6 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Main card surface (glass look)
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 4.dp,
@@ -435,7 +425,6 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Information Carousel (UNCHANGED)
                         val notices = listOf(
                             Notice("New Resource", "Deep Learning notes uploaded by Jane Smith"),
                             Notice("Lost Item", "Blue backpack found in the cafeteria. Contact security."),
@@ -478,7 +467,6 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
 
                         Spacer(modifier = Modifier.height(28.dp))
 
-                        // Action Buttons (UNCHANGED navigation)
                         Button(
                             onClick = { navController.navigate("liveNotesSharing") },
                             modifier = Modifier.fillMaxWidth(),
@@ -507,7 +495,6 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
                     }
                 }
 
-                // Add some bottom spacing so content doesn't get obscured by the bottomBar
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
@@ -541,7 +528,7 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
         val count by viewmodel.count.collectAsState()
         val count2 by viewm.count2.collectAsState()
 
-        Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
 
             TabRow(
                 selectedTabIndex = selectedtabindex,
@@ -730,6 +717,7 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
         }
     }
 }
+
 @Composable
 fun RadialGlowBackground(
     modifier: Modifier = Modifier,
@@ -740,7 +728,6 @@ fun RadialGlowBackground(
         modifier = modifier
             .background(Color.Transparent)
             .drawBehind {
-                // Top-left gentle glow
                 drawCircle(
                     color = glowColor,
                     radius = size.minDimension * 0.6f,
@@ -752,7 +739,6 @@ fun RadialGlowBackground(
                     radius = size.minDimension * 0.45f,
                     center = Offset(x = size.width * 0.85f, y = size.height * 0.25f)
                 )
-                // Bottom faint glow
                 drawCircle(
                     color = glowColor.copy(alpha = 0.12f),
                     radius = size.minDimension * 0.5f,
@@ -766,6 +752,12 @@ fun RadialGlowBackground(
 
 @Composable
 fun Login(userViewModel: UserViewModel = viewModel(), navController: NavController) {
+
+    val context = LocalContext.current
+    val session = SessionManager(context)
+    userViewModel.getUserandSetState(session.getLoggedInUser())
+
+    val passwordVisible by userViewModel.passwordVisible.collectAsState()
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -814,11 +806,20 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
 
                     OutlinedTextField(
                         value = loginPassword,
-                        // NOTE: fixed bug here — now updates the state
                         onValueChange = { loginPassword = it },
                         label = { Text("Enter Password") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val icon = if (passwordVisible) Icons.Default.Visibility
+                            else Icons.Default.VisibilityOff
+                            IconButton(onClick = {
+                                userViewModel.passwordVisible.value = !passwordVisible
+                            }) {
+                                Icon(imageVector = icon, contentDescription = "Toggle Password")
+                            }
+                        }
                     )
 
                     Row(Modifier.padding(top = 20.dp)) {
@@ -837,17 +838,21 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    userViewModel.getUserandSetState(loginUserPhone)
                     Button(
                         onClick = {
-                            userViewModel.getUserandSetState(loginUserPhone)
                             if((userPhoneNumber==loginUserPhone) && (userPassword==loginPassword)){
                                 Log.d("Tag","Login Successful")
-                                navController.navigate("homeScreen")
+                                session.saveLogin(loginUserPhone)
+                                navController.navigate("homeScreen"){
+                                    popUpTo("login"){inclusive=true}
+                                }
                             }
                             else{
-                                Log.d("Tag","Phone Number and PassWord dose not Match")
-                                Toast.makeText(context, "Phone Number and PassWord dose not Match", Toast.LENGTH_LONG).show()
+                                Log.d("Tag","Phone Number and Password does not match!")
+                                Toast.makeText(context, "Phone Number and Password does not match!", Toast.LENGTH_LONG).show()
                             }
+
                         },
                         modifier = Modifier
                             .padding(top = 20.dp)
@@ -861,6 +866,8 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
     }
 }
 
+
+
 @Composable
 fun SignUpScreen(
     viewModel: UserViewModel = viewModel(),
@@ -872,6 +879,9 @@ fun SignUpScreen(
     val email by viewModel.userEmail.collectAsState()
     val password by viewModel.userPassword.collectAsState()
     val confirmPassword by viewModel.confirmPassword.collectAsState()
+
+    val passwordVisible by viewModel.passwordVisible.collectAsState()
+    val confirmPasswordVisible by viewModel.confirmPasswordVisible.collectAsState()
 
     val nameError by viewModel.nameError.collectAsState()
     val numberError by viewModel.numberError.collectAsState()
@@ -1033,9 +1043,17 @@ fun SignUpScreen(
                         singleLine = true,
                         isError = passwordError.isNotEmpty(),
                         supportingText = { if (passwordError.isNotEmpty()) Text(passwordError) },
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val icon = if (passwordVisible) Icons.Default.Visibility
+                            else Icons.Default.VisibilityOff
+                            IconButton(onClick = {
+                                viewModel.passwordVisible.value = !passwordVisible
+                            }) {
+                                Icon(imageVector = icon, contentDescription = "Toggle Password")
+                            }
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -1050,9 +1068,17 @@ fun SignUpScreen(
                         singleLine = true,
                         isError = confirmPasswordError.isNotEmpty(),
                         supportingText = { if (confirmPasswordError.isNotEmpty()) Text(confirmPasswordError) },
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val icon = if (confirmPasswordVisible) Icons.Default.Visibility
+                            else Icons.Default.VisibilityOff
+                            IconButton(onClick = {
+                                viewModel.confirmPasswordVisible.value = !confirmPasswordVisible
+                            }) {
+                                Icon(imageVector = icon, contentDescription = "Toggle Password")
+                            }
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -1083,7 +1109,9 @@ fun SignUpScreen(
                         text = "Already have an account? Log In",
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable {
-                            navController.popBackStack()
+                            navController.navigate("login"){
+                                popUpTo(0)
+                            }
                         }
                     )
                 }
@@ -1094,12 +1122,15 @@ fun SignUpScreen(
 
 
 @Composable
-fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavController) {
+fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavController = rememberNavController()) {
     val context = LocalContext.current
+    val session = SessionManager(context)
 
     LaunchedEffect(Unit) {
-        userViewModel.getUserandSetState("412345")
+        userViewModel.getUserandSetState(session.getLoggedInUser())
     }
+
+    var enableChange by remember{mutableStateOf(false)}
 
     val userId by userViewModel.userId.collectAsState()
     val editName by userViewModel.nameOfUser.collectAsState()
@@ -1107,6 +1138,9 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
     val editMobileNumber by userViewModel.userPhoneNumber.collectAsState()
     val editPassword by userViewModel.userPassword.collectAsState()
     val passwordVisible by userViewModel.passwordVisible.collectAsState()
+    val confirmPasswordVisible by userViewModel.confirmPasswordVisible.collectAsState()
+
+
     val nameError by userViewModel.nameError.collectAsState()
     val numberError by userViewModel.numberError.collectAsState()
     val emailError by userViewModel.emailError.collectAsState()
@@ -1115,6 +1149,8 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
     var editConfirmPassword by remember { mutableStateOf("") }
     var selectedtabindex by remember { mutableStateOf(0) }
+
+    editConfirmPassword = editPassword
 
     val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -1274,16 +1310,22 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             contentDescription = null,
                             modifier = Modifier
                                 .size(28.dp)
-                                .clickable(true, onClick = {
-                                    navController.navigate("login")
-                                })
+                                .clickable(
+                                    true, onClick = {
+                                        navController.navigate("login")
+                                    }
+                                )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Logout",
-                            modifier = Modifier.clickable(true, onClick = {
-                                navController.navigate("login")
-                            }),
+                            modifier = Modifier.clickable {
+                                session.logout()
+                                navController.navigate("login"){
+                                    popUpTo("homeScreen") {inclusive = true}
+                                }
+                                Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                            },
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium
@@ -1327,6 +1369,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                         Text(
                             "Edit Profile",
                             modifier = Modifier.clickable {
+                                enableChange = true
                                 Log.d("ClickableText", "Text clicked!")
                             },
                             color = MaterialTheme.colorScheme.primary,
@@ -1338,6 +1381,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         // Name
                         OutlinedTextField(
+                            enabled = enableChange,
                             value = editName,
                             onValueChange = {
                                 userViewModel.nameOfUser.value = it
@@ -1356,6 +1400,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         // Mobile Number
                         OutlinedTextField(
+                            enabled = enableChange,
                             value = editMobileNumber,
                             onValueChange = {
                                 userViewModel.userPhoneNumber.value = it.filter { c -> c.isDigit() }
@@ -1375,6 +1420,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         // Email
                         OutlinedTextField(
+                            enabled = enableChange,
                             value = editEmail,
                             onValueChange = {
                                 userViewModel.userEmail.value = it
@@ -1394,6 +1440,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         // Password
                         OutlinedTextField(
+                            enabled = enableChange,
                             value = editPassword,
                             onValueChange = {
                                 userViewModel.userPassword.value = it
@@ -1407,7 +1454,6 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp),
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
                                 val icon = if (passwordVisible) Icons.Default.Visibility
                                 else Icons.Default.VisibilityOff
@@ -1423,6 +1469,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         // Confirm Password
                         OutlinedTextField(
+                            enabled = enableChange,
                             value = editConfirmPassword,
                             onValueChange = {
                                 editConfirmPassword = it
@@ -1435,14 +1482,15 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp),
-                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
-                                val icon = if (passwordVisible) Icons.Default.Visibility
-                                else Icons.Default.VisibilityOff
-                                IconButton(onClick = {
-                                    userViewModel.passwordVisible.value = !passwordVisible
-                                }) {
+                                val icon =
+                                    if (confirmPasswordVisible) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff
+
+                                IconButton(
+                                    onClick = { userViewModel.confirmPasswordVisible.value = !confirmPasswordVisible }
+                                ) {
                                     Icon(imageVector = icon, contentDescription = "Toggle Password")
                                 }
                             }
@@ -1455,6 +1503,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Button(
+                                enabled = enableChange,
                                 onClick = {
                                     if (validate()) {
                                         userViewModel.updateUser(
@@ -1482,7 +1531,10 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             Button(
                                 onClick = {
                                     userViewModel.deleteUser()
-                                    navController.navigate("signupScreen")
+                                    session.logout()
+                                    navController.navigate("signupScreen"){
+                                        popUpTo(0)
+                                    }
                                 },
                                 modifier = Modifier.padding(start = 30.dp)
                             ) {
@@ -1701,10 +1753,14 @@ fun FindAllNotes(navController:NavController){
 
 @Composable
 fun LiveNotesSharing(
-    viewModels: LiveNotesSharingViewModel,
-    userViewModel: UserViewModel,
+    viewModels: LiveNotesSharingViewModel = viewModel(),
+    userViewModel: UserViewModel=viewModel(),
     navController: NavController
 ) {
+
+    val session = SessionManager(LocalContext.current)
+    userViewModel.getUserandSetState(session.getLoggedInUser())
+
     var selectedtabindex by remember { mutableStateOf(0) }
     val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -1712,7 +1768,7 @@ fun LiveNotesSharing(
         R.drawable.baseline_local_parking_24,
         R.drawable.outline_person_24
     )
-    var count by remember { mutableStateOf(0) }
+    var count = 0
     val footerindex by viewModels.footerindex.collectAsState()
     val selectedTab by viewModels.selectedTab.collectAsState()
     val searchQuery by viewModels.searchQuery.collectAsState()
@@ -1720,7 +1776,7 @@ fun LiveNotesSharing(
     val searchLiveText by viewModels.searchLiveText.collectAsState()
     val goLiveTitle by viewModels.goLiveTitle.collectAsState()
     val goLiveDescription by viewModels.goLiveDescription.collectAsState()
-    val liveId by remember { mutableStateOf(userViewModel.userId.value) }
+    val liveId by userViewModel.userId.collectAsState()
 
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
@@ -1851,7 +1907,6 @@ fun LiveNotesSharing(
                         if (count > 0) {
                             viewModels.serachIdinLiveShare(searchQuery)
                         }
-                        viewModels.serachIdinLiveShare(searchQuery)
 
                         Spacer(Modifier.height(12.dp))
 
@@ -1928,14 +1983,13 @@ fun LiveNotesSharing(
                         OutlinedTextField(
                             value = goLiveDescription,
                             onValueChange = {
-                                // PRESERVE: your original call while typing
                                 viewModels.goLiveDescription.value = it
                                 viewModels.liveNotesSharing(userViewModel, goLiveTitle, goLiveDescription)
                             },
                             label = { Text("Description") },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(600.dp)
+                                .height(500.dp)
                                 .clip(RoundedCornerShape(12.dp))
                         )
 
@@ -1955,9 +2009,9 @@ fun LiveNotesSharing(
 
 
 @Composable
-fun AppNavigation(){
+fun AppNavigation(startDestination:String){
     val navController=rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("login") {
             Login(viewModel(),navController)
         }

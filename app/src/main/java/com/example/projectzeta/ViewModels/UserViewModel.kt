@@ -30,13 +30,15 @@ class UserViewModel: ViewModel()    {
     val passwordError = MutableStateFlow<String>("")
 
     val passwordVisible = MutableStateFlow<Boolean>(false)
+    val confirmPasswordVisible = MutableStateFlow<Boolean>(false)
 
     val confirmPassword = MutableStateFlow("")
     val confirmPasswordError = MutableStateFlow("")
 
 
-    fun getUserandSetState(value:String){
-        RealtimeFirebaseHelper.readItemUsingProperty(FirebaseDatabases.USER_TABLE, "mobileNo", value, User::class.java){user->
+    fun getUserandSetState(value:String?){
+        RealtimeFirebaseHelper.readItemUsingProperty(FirebaseDatabases.USER_TABLE, "mobileNo",
+            value ?: "412345", User::class.java){ user->
             if(user!=null){
                 Log.d("TAG", user.toString())
                 userId.value = user.userId
