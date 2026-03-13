@@ -294,10 +294,9 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            containerColor = Color.Transparent, // let the glow show through
+            containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onSurface,
             bottomBar = {
-                // Bottom nav pinned to the bottom
                 Surface(
                     shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                     tonalElevation = 2.dp,
@@ -589,8 +588,8 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                     }
                 }
 
-                OutlinedTextField(value = input1, onValueChange = { input1 = it }, Modifier.padding(start = 65.dp))
-                OutlinedTextField(value = input2, onValueChange = { input2 = it }, Modifier.padding(start = 65.dp))
+                OutlinedTextField(value = input1, onValueChange = { input1 = it }, Modifier.padding(start = 65.dp), label = {Text("Enter Lost Item")})
+                OutlinedTextField(value = input2, onValueChange = { input2 = it }, Modifier.padding(start = 65.dp), label = {Text("Describe it")})
 
                 Row(
                     modifier = Modifier
@@ -644,8 +643,8 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                     }
                 }
 
-                OutlinedTextField(value = input3, onValueChange = { input3 = it }, Modifier.padding(start = 65.dp))
-                OutlinedTextField(value = input4, onValueChange = { input4 = it }, Modifier.padding(start = 65.dp))
+                OutlinedTextField(value = input3, onValueChange = { input3 = it }, Modifier.padding(start = 65.dp), label = {Text("Enter Found item")})
+                OutlinedTextField(value = input4, onValueChange = { input4 = it }, Modifier.padding(start = 65.dp), label = {Text("Describe it")})
 
                 Row(
                     modifier = Modifier
@@ -797,7 +796,7 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
                     OutlinedTextField(
                         value = loginUserPhone,
                         onValueChange = {loginUserPhone=it },
-                        label = { Text("Enter PhoneNumber") },
+                        label = { Text("Enter Phone Number") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -1147,10 +1146,9 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
     val passwordError by userViewModel.passwordError.collectAsState()
     val confirmPasswordError by userViewModel.confirmPasswordError.collectAsState()
 
-    var editConfirmPassword by remember { mutableStateOf("") }
+    val editConfirmPassword by userViewModel.confirmPassword.collectAsState()//remember { mutableStateOf("") }
     var selectedtabindex by remember { mutableStateOf(0) }
 
-    editConfirmPassword = editPassword
 
     val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -1472,7 +1470,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             enabled = enableChange,
                             value = editConfirmPassword,
                             onValueChange = {
-                                editConfirmPassword = it
+                                userViewModel.confirmPassword.value = it
                                 if (confirmPasswordError.isNotEmpty()) userViewModel.confirmPasswordError.value = ""
                             },
                             label = { Text("Confirm Password") },
@@ -1506,6 +1504,8 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                 enabled = enableChange,
                                 onClick = {
                                     if (validate()) {
+                                        Toast.makeText(context, "Updated!!", Toast.LENGTH_SHORT).show()
+                                        session.logout()
                                         userViewModel.updateUser(
                                             User(
                                                 userId,
@@ -1515,7 +1515,6 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                                 editPassword
                                             )
                                         )
-                                        Toast.makeText(context, "Updated!!", Toast.LENGTH_SHORT).show()
                                     } else {
                                         Toast.makeText(
                                             context,
