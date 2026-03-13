@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.se.omapi.Session
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -69,7 +68,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -86,7 +84,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.projectzeta.ViewModels.LiveNotesSharingViewModel
 import com.example.projectzeta.model.Notice
 import com.example.projectzeta.ViewModels.UserViewModel
-import com.example.projectzeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.projectzeta.Model.User
 import com.example.projectzeta.SessionManager
@@ -114,7 +111,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: NavController) {
+fun ParkingScreen(viewModel: ReservationViewModel = viewModel(), navController: NavController) {
 
     val slots by viewModel.slots.collectAsState()
     val userViewModel: UserViewModel = viewModel()
@@ -888,66 +885,6 @@ fun SignUpScreen(
     val passwordError by viewModel.passwordError.collectAsState()
     val confirmPasswordError by viewModel.confirmPasswordError.collectAsState()
 
-    fun validate(): Boolean {
-        var ok = true
-
-        // Name
-        val nameTrim = name.trim()
-        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
-        viewModel.nameError.value = when {
-            nameTrim.isEmpty() -> { ok = false; "Name is required" }
-            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
-            else -> ""
-        }
-
-        // Phone
-        val digitsOnly = number.filter { it.isDigit() }
-        val phoneRegex = Regex("^[6-9]\\d{9}$")
-        viewModel.numberError.value = when {
-            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
-            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
-            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
-            else -> ""
-        }
-
-        // Email
-        val emailTrim = email.trim()
-        viewModel.emailError.value = when {
-            emailTrim.isEmpty() -> { ok = false; "Email is required" }
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
-                ok = false; "Enter a valid email address"
-            }
-            else -> ""
-        }
-
-        // Password
-        if (password.isEmpty()) {
-            viewModel.passwordError.value = "Password is required"
-            ok = false
-        } else {
-            val rules = listOf(
-                Regex(".{8,}") to "8+ characters",
-                Regex("[a-z]") to "one lowercase",
-                Regex("[A-Z]") to "one uppercase",
-                Regex("\\d") to "one digit",
-                Regex("[^A-Za-z0-9]") to "one special character"
-            )
-            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(password) }.map { it.second }
-            viewModel.passwordError.value = if (failed.isNotEmpty()) {
-                ok = false; "Password must include: ${failed.joinToString(", ")}"
-            } else ""
-        }
-
-        // Confirm Password
-        viewModel.confirmPasswordError.value = when {
-            confirmPassword.isEmpty() -> { ok = false; "Please confirm your password" }
-            confirmPassword != password -> { ok = false; "Passwords do not match" }
-            else -> ""
-        }
-
-        return ok
-    }
-
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -1085,7 +1022,7 @@ fun SignUpScreen(
                     val context = LocalContext.current
                     Button(
                         onClick = {
-                            if (validate()) {
+                            if (viewModel.validate()) {
                                 val user = User(userId, name, number, email, password)
                                 Log.d("user", user.toString())
                                 viewModel.getUserandSetStateByuserId(user.userId)
@@ -1157,66 +1094,6 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
         R.drawable.outline_person_24
     )
     var footerindex by remember { mutableStateOf(0) }
-
-    fun validate(): Boolean {
-        var ok = true
-
-        // Name
-        val nameTrim = editName.trim()
-        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
-        userViewModel.nameError.value = when {
-            nameTrim.isEmpty() -> { ok = false; "Name is required" }
-            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
-            else -> ""
-        }
-
-        // Phone
-        val digitsOnly = editMobileNumber.filter { it.isDigit() }
-        val phoneRegex = Regex("^[6-9]\\d{9}$")
-        userViewModel.numberError.value = when {
-            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
-            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
-            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
-            else -> ""
-        }
-
-        // Email
-        val emailTrim = editEmail.trim()
-        userViewModel.emailError.value = when {
-            emailTrim.isEmpty() -> { ok = false; "Email is required" }
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
-                ok = false; "Enter a valid email address"
-            }
-            else -> ""
-        }
-
-        // Password
-        if (editPassword.isEmpty()) {
-            userViewModel.passwordError.value = "Password is required"
-            ok = false
-        } else {
-            val rules = listOf(
-                Regex(".{8,}") to "8+ characters",
-                Regex("[a-z]") to "one lowercase",
-                Regex("[A-Z]") to "one uppercase",
-                Regex("\\d") to "one digit",
-                Regex("[^A-Za-z0-9]") to "one special character"
-            )
-            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(editPassword) }.map { it.second }
-            userViewModel.passwordError.value = if (failed.isNotEmpty()) {
-                ok = false; "Password must include: ${failed.joinToString(", ")}"
-            } else ""
-        }
-
-        // Confirm Password
-        userViewModel.confirmPasswordError.value = when {
-            editConfirmPassword.isEmpty() -> { ok = false; "Please confirm your password" }
-            editConfirmPassword != editPassword -> { ok = false; "Passwords do not match" }
-            else -> ""
-        }
-
-        return ok
-    }
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -1503,9 +1380,9 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             Button(
                                 enabled = enableChange,
                                 onClick = {
-                                    if (validate()) {
+                                    if (userViewModel.validate()) {
                                         Toast.makeText(context, "Updated!!", Toast.LENGTH_SHORT).show()
-                                        session.logout()
+
                                         userViewModel.updateUser(
                                             User(
                                                 userId,
@@ -1515,6 +1392,10 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                                 editPassword
                                             )
                                         )
+                                        session.logout()
+                                        navController.navigate("login"){
+                                            popUpTo("homeScreen") {inclusive = true}
+                                        }
                                     } else {
                                         Toast.makeText(
                                             context,
@@ -1767,7 +1648,6 @@ fun LiveNotesSharing(
         R.drawable.baseline_local_parking_24,
         R.drawable.outline_person_24
     )
-    var count = 0
     val footerindex by viewModels.footerindex.collectAsState()
     val selectedTab by viewModels.selectedTab.collectAsState()
     val searchQuery by viewModels.searchQuery.collectAsState()
@@ -1903,22 +1783,17 @@ fun LiveNotesSharing(
                                 .clip(RoundedCornerShape(12.dp))
                         )
 
-                        if (count > 0) {
-                            viewModels.serachIdinLiveShare(searchQuery)
-                        }
-
                         Spacer(Modifier.height(12.dp))
 
                         Button(
                             onClick = {
-                                count++
-                                viewModels.serachIdinLiveShare(searchQuery)
+                                viewModels.startLiveObservation(searchQuery)
                             },
                             modifier = Modifier
-                                .padding(start = 140.dp)
+                                .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                         ) {
-                            Text("Search")
+                            Text("Search & Join Live")
                         }
 
                         Spacer(Modifier.height(12.dp))
@@ -1926,7 +1801,7 @@ fun LiveNotesSharing(
                         Card(
                             elevation = CardDefaults.cardElevation(10.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
                                 contentColor = MaterialTheme.colorScheme.onSurface
                             ),
                             modifier = Modifier.clip(RoundedCornerShape(12.dp))
@@ -1948,7 +1823,7 @@ fun LiveNotesSharing(
                         Card(
                             elevation = CardDefaults.cardElevation(10.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
                                 contentColor = MaterialTheme.colorScheme.onSurface
                             ),
                             modifier = Modifier.clip(RoundedCornerShape(12.dp))
@@ -2021,7 +1896,7 @@ fun AppNavigation(startDestination:String){
             HomeScreen(viewModel(),navController)
         }
         composable("parkingScreen") {
-            parkingScreen(viewModel(),navController)
+            ParkingScreen(viewModel(),navController)
         }
         composable("lostAndFoundScreen") {
             LostAndFoundScreen(navController,viewModel(),viewModel())

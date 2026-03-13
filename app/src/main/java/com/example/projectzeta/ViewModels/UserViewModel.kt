@@ -79,5 +79,65 @@ class UserViewModel: ViewModel()    {
         RealtimeFirebaseHelper.deleteItem(FirebaseDatabases.USER_TABLE,userId.value)
     }
 
+    fun validate(): Boolean {
+        var ok = true
+
+        // Name
+        val nameTrim = nameOfUser.value.trim()
+        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
+        nameError.value = when {
+            nameTrim.isEmpty() -> { ok = false; "Name is required" }
+            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
+            else -> ""
+        }
+
+        // Phone
+        val digitsOnly = userPhoneNumber.value.filter { it.isDigit() }
+        val phoneRegex = Regex("^[6-9]\\d{9}$")
+        numberError.value = when {
+            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
+            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
+            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
+            else -> ""
+        }
+
+        // Email
+        val emailTrim = userEmail.value.trim()
+        emailError.value = when {
+            emailTrim.isEmpty() -> { ok = false; "Email is required" }
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
+                ok = false; "Enter a valid email address"
+            }
+            else -> ""
+        }
+
+        // Password
+        if (userPassword.value.isEmpty()) {
+            passwordError.value = "Password is required"
+            ok = false
+        } else {
+            val rules = listOf(
+                Regex(".{8,}") to "8+ characters",
+                Regex("[a-z]") to "one lowercase",
+                Regex("[A-Z]") to "one uppercase",
+                Regex("\\d") to "one digit",
+                Regex("[^A-Za-z0-9]") to "one special character"
+            )
+            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(userPassword.value) }.map { it.second }
+            passwordError.value = if (failed.isNotEmpty()) {
+                ok = false; "Password must include: ${failed.joinToString(", ")}"
+            } else ""
+        }
+
+        // Confirm Password
+        confirmPasswordError.value = when {
+            confirmPassword.value.isEmpty() -> { ok = false; "Please confirm your password" }
+            confirmPassword.value != userPassword.value -> { ok = false; "Passwords do not match" }
+            else -> ""
+        }
+
+        return ok
+    }
+
 
 }

@@ -111,5 +111,33 @@ class RealtimeFirebaseHelper {
                 })
         }
 
+        fun <T> observeItemUsingProperty(
+            tableName: String,
+            property: String,
+            value: String,
+            clazz: Class<T>,
+            onResult: (T?) -> Unit
+        ) {
+            database.child(tableName)
+                .orderByChild(property)
+                .equalTo(value)
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            for (child in snapshot.children) {
+                                val item = child.getValue(clazz)
+                                onResult(item)
+                                return
+                            }
+                        } else {
+                            onResult(null)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        onResult(null)
+                    }
+                })
+        }
     }
 }

@@ -14,7 +14,8 @@ class LiveNotesSharingViewModel: ViewModel() {
     var searchLiveText =  MutableStateFlow("Live")
     var goLiveTitle =  MutableStateFlow("")
     var goLiveDescription =  MutableStateFlow("")
-    var liveId =  MutableStateFlow("")
+
+    var selectedtabindex = MutableStateFlow(0)
 
     fun serachIdinLiveShare(value:String){
         RealtimeFirebaseHelper.readItemUsingProperty(
@@ -29,6 +30,21 @@ class LiveNotesSharingViewModel: ViewModel() {
             }
         }
     }
+
+    fun startLiveObservation(value: String) {
+        if (value.isEmpty()) return
+
+        RealtimeFirebaseHelper.observeItemUsingProperty(
+            FirebaseDatabases.LIVE_NOTESHARING, "id", value,
+            LiveNoteSharing::class.java
+        ) { notesSharing ->
+            if (notesSharing != null) {
+                searchTitle.value = notesSharing.title
+                searchLiveText.value = notesSharing.description
+            }
+        }
+    }
+
     fun liveNotesSharing(userViewModel: UserViewModel, title: String, desc:String){
         RealtimeFirebaseHelper.writeItem(FirebaseDatabases.LIVE_NOTESHARING,userViewModel.userId.value,
             LiveNoteSharing(userViewModel.userId.value,title,desc))
