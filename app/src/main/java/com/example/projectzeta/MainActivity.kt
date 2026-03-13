@@ -30,12 +30,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
@@ -68,6 +71,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -880,6 +884,72 @@ fun SignUpScreen(
     val password by viewModel.userPassword.collectAsState()
     val confirmPassword by viewModel.confirmPassword.collectAsState()
 
+    val nameError by viewModel.nameError.collectAsState()
+    val numberError by viewModel.numberError.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+    val passwordError by viewModel.passwordError.collectAsState()
+    val confirmPasswordError by viewModel.confirmPasswordError.collectAsState()
+
+    fun validate(): Boolean {
+        var ok = true
+
+        // Name
+        val nameTrim = name.trim()
+        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
+        viewModel.nameError.value = when {
+            nameTrim.isEmpty() -> { ok = false; "Name is required" }
+            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
+            else -> ""
+        }
+
+        // Phone
+        val digitsOnly = number.filter { it.isDigit() }
+        val phoneRegex = Regex("^[6-9]\\d{9}$")
+        viewModel.numberError.value = when {
+            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
+            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
+            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
+            else -> ""
+        }
+
+        // Email
+        val emailTrim = email.trim()
+        viewModel.emailError.value = when {
+            emailTrim.isEmpty() -> { ok = false; "Email is required" }
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
+                ok = false; "Enter a valid email address"
+            }
+            else -> ""
+        }
+
+        // Password
+        if (password.isEmpty()) {
+            viewModel.passwordError.value = "Password is required"
+            ok = false
+        } else {
+            val rules = listOf(
+                Regex(".{8,}") to "8+ characters",
+                Regex("[a-z]") to "one lowercase",
+                Regex("[A-Z]") to "one uppercase",
+                Regex("\\d") to "one digit",
+                Regex("[^A-Za-z0-9]") to "one special character"
+            )
+            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(password) }.map { it.second }
+            viewModel.passwordError.value = if (failed.isNotEmpty()) {
+                ok = false; "Password must include: ${failed.joinToString(", ")}"
+            } else ""
+        }
+
+        // Confirm Password
+        viewModel.confirmPasswordError.value = when {
+            confirmPassword.isEmpty() -> { ok = false; "Please confirm your password" }
+            confirmPassword != password -> { ok = false; "Passwords do not match" }
+            else -> ""
+        }
+
+        return ok
+    }
+
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -916,11 +986,17 @@ fun SignUpScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(24.dp))
+
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { viewModel.nameOfUser.value = it },
+                        onValueChange = {
+                            viewModel.nameOfUser.value = it
+                            if (nameError.isNotEmpty()) viewModel.nameError.value = ""
+                        },
                         label = { Text("Name") },
                         singleLine = true,
+                        isError = nameError.isNotEmpty(),
+                        supportingText = { if (nameError.isNotEmpty()) Text(nameError) },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -930,9 +1006,13 @@ fun SignUpScreen(
                         value = number,
                         onValueChange = {
                             viewModel.userPhoneNumber.value = it.filter { c -> c.isDigit() }
+                            if (numberError.isNotEmpty()) viewModel.numberError.value = ""
                         },
                         label = { Text("Phone Number") },
                         singleLine = true,
+                        isError = numberError.isNotEmpty(),
+                        supportingText = { if (numberError.isNotEmpty()) Text(numberError) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -940,9 +1020,15 @@ fun SignUpScreen(
 
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { viewModel.userEmail.value = it },
+                        onValueChange = {
+                            viewModel.userEmail.value = it
+                            if (emailError.isNotEmpty()) viewModel.emailError.value = ""
+                        },
                         label = { Text("Email") },
                         singleLine = true,
+                        isError = emailError.isNotEmpty(),
+                        supportingText = { if (emailError.isNotEmpty()) Text(emailError) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -950,9 +1036,16 @@ fun SignUpScreen(
 
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { viewModel.userPassword.value = it },
+                        onValueChange = {
+                            viewModel.userPassword.value = it
+                            if (passwordError.isNotEmpty()) viewModel.passwordError.value = ""
+                        },
                         label = { Text("Password") },
                         singleLine = true,
+                        isError = passwordError.isNotEmpty(),
+                        supportingText = { if (passwordError.isNotEmpty()) Text(passwordError) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -960,32 +1053,42 @@ fun SignUpScreen(
 
                     OutlinedTextField(
                         value = confirmPassword,
-                        onValueChange = { viewModel.confirmPassword.value = it },
+                        onValueChange = {
+                            viewModel.confirmPassword.value = it
+                            if (confirmPasswordError.isNotEmpty()) viewModel.confirmPasswordError.value = ""
+                        },
                         label = { Text("Confirm Password") },
                         singleLine = true,
+                        isError = confirmPasswordError.isNotEmpty(),
+                        supportingText = { if (confirmPasswordError.isNotEmpty()) Text(confirmPasswordError) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    val context = LocalContext.current
                     Button(
                         onClick = {
-                            var user = User(userId,name,number,email,password)
-                            Log.d("user", user.toString())
-                            viewModel.getUserandSetStateByuserId(user.userId)
-                            if(confirmPassword==password && name.length>8 && number.length==10){
-                                viewModel.createUserintable(user)
-                                Log.d("Tag","Created User with id $userId")
-                                navController.popBackStack()
+                            if (validate()) {
+                                val user = User(userId, name, number, email, password)
+                                Log.d("user", user.toString())
+                                viewModel.getUserandSetStateByuserId(user.userId)
+                                    viewModel.createUserintable(user)
+                                    Log.d("Tag", "Created User with id $userId")
+                                    Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
                             }
-                            else{
-                                Log.d("Tag","Enter Valid Details")
+                            else {
+                                Toast.makeText(context, "Please enter valid details", Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Sign Up")
                     }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "Already have an account? Log In",
@@ -1014,10 +1117,14 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
     val editEmail by userViewModel.userEmail.collectAsState()
     val editMobileNumber by userViewModel.userPhoneNumber.collectAsState()
     val editPassword by userViewModel.userPassword.collectAsState()
+    val passwordVisible by userViewModel.passwordVisible.collectAsState()
+    val nameError by userViewModel.nameError.collectAsState()
+    val numberError by userViewModel.numberError.collectAsState()
+    val emailError by userViewModel.emailError.collectAsState()
+    val passwordError by userViewModel.passwordError.collectAsState()
+    val confirmPasswordError by userViewModel.confirmPasswordError.collectAsState()
 
     var editConfirmPassword by remember { mutableStateOf("") }
-    val passwordVisible by userViewModel.passwordVisible.collectAsState()
-
     var selectedtabindex by remember { mutableStateOf(0) }
 
     val footerr: List<Int> = listOf(
@@ -1028,12 +1135,71 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
     )
     var footerindex by remember { mutableStateOf(0) }
 
+    fun validate(): Boolean {
+        var ok = true
+
+        // Name
+        val nameTrim = editName.trim()
+        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
+        userViewModel.nameError.value = when {
+            nameTrim.isEmpty() -> { ok = false; "Name is required" }
+            !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
+            else -> ""
+        }
+
+        // Phone
+        val digitsOnly = editMobileNumber.filter { it.isDigit() }
+        val phoneRegex = Regex("^[6-9]\\d{9}$")
+        userViewModel.numberError.value = when {
+            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
+            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
+            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
+            else -> ""
+        }
+
+        // Email
+        val emailTrim = editEmail.trim()
+        userViewModel.emailError.value = when {
+            emailTrim.isEmpty() -> { ok = false; "Email is required" }
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(emailTrim).matches() -> {
+                ok = false; "Enter a valid email address"
+            }
+            else -> ""
+        }
+
+        // Password
+        if (editPassword.isEmpty()) {
+            userViewModel.passwordError.value = "Password is required"
+            ok = false
+        } else {
+            val rules = listOf(
+                Regex(".{8,}") to "8+ characters",
+                Regex("[a-z]") to "one lowercase",
+                Regex("[A-Z]") to "one uppercase",
+                Regex("\\d") to "one digit",
+                Regex("[^A-Za-z0-9]") to "one special character"
+            )
+            val failed = rules.filter { (rx, _) -> !rx.containsMatchIn(editPassword) }.map { it.second }
+            userViewModel.passwordError.value = if (failed.isNotEmpty()) {
+                ok = false; "Password must include: ${failed.joinToString(", ")}"
+            } else ""
+        }
+
+        // Confirm Password
+        userViewModel.confirmPasswordError.value = when {
+            editConfirmPassword.isEmpty() -> { ok = false; "Please confirm your password" }
+            editConfirmPassword != editPassword -> { ok = false; "Passwords do not match" }
+            else -> ""
+        }
+
+        return ok
+    }
+
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onSurface,
             bottomBar = {
-                // Footer pinned to bottom — preserves your original TabRow logic
                 Surface(
                     shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                     tonalElevation = 2.dp,
@@ -1062,20 +1228,20 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                 selected = footerindex == index,
                                 onClick = {
                                     footerindex = index
-                                    if(index==0){
-                                        Log.d("tag","Clicking $index")
+                                    if (index == 0) {
+                                        Log.d("tag", "Clicking $index")
                                         navController.navigate("homeScreen")
                                     }
                                     if (index == 1) {
-                                        Log.d("tag","Clicking $index")
+                                        Log.d("tag", "Clicking $index")
                                         navController.navigate("lostAndFoundScreen")
                                     }
-                                    if(index ==2){
-                                        Log.d("tag","Clicking $index")
+                                    if (index == 2) {
+                                        Log.d("tag", "Clicking $index")
                                         navController.navigate("parkingScreen")
                                     }
-                                    if(index==3){
-                                        Log.d("tag","Clicking $index")
+                                    if (index == 3) {
+                                        Log.d("tag", "Clicking $index")
                                         navController.navigate("aboutPage")
                                     }
                                 },
@@ -1099,6 +1265,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                     .statusBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Logout bar
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 2.dp,
@@ -1116,28 +1283,28 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                         Image(
                             painter = painterResource(R.drawable.logout),
                             contentDescription = null,
-                            modifier = Modifier.size(28.dp).clickable(
-                                true, onClick = {
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clickable(true, onClick = {
                                     navController.navigate("login")
-                                }
-                            )
+                                })
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Logout",
                             modifier = Modifier.clickable(true, onClick = {
                                 navController.navigate("login")
-                            })
-                            ,
+                            }),
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium
                         )
                     }
                 }
+
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // ===== Main Profile Surface (glass look) =====
+                // Main Profile Surface
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 4.dp,
@@ -1148,6 +1315,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -1179,11 +1347,17 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         Spacer(modifier = Modifier.height(10.dp))
 
+                        // Name
                         OutlinedTextField(
                             value = editName,
-                            onValueChange = { userViewModel.nameOfUser.value = it },
+                            onValueChange = {
+                                userViewModel.nameOfUser.value = it
+                                if (nameError.isNotEmpty()) userViewModel.nameError.value = ""
+                            },
                             label = { Text("Name") },
                             singleLine = true,
+                            isError = nameError.isNotEmpty(),
+                            supportingText = { if (nameError.isNotEmpty()) Text(nameError) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp)
@@ -1191,11 +1365,18 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         Spacer(modifier = Modifier.height(5.dp))
 
+                        // Mobile Number
                         OutlinedTextField(
                             value = editMobileNumber,
-                            onValueChange = { userViewModel.userPhoneNumber.value = it },
+                            onValueChange = {
+                                userViewModel.userPhoneNumber.value = it.filter { c -> c.isDigit() }
+                                if (numberError.isNotEmpty()) userViewModel.numberError.value = ""
+                            },
                             label = { Text("Mobile Number") },
                             singleLine = true,
+                            isError = numberError.isNotEmpty(),
+                            supportingText = { if (numberError.isNotEmpty()) Text(numberError) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp)
@@ -1203,11 +1384,18 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         Spacer(modifier = Modifier.height(5.dp))
 
+                        // Email
                         OutlinedTextField(
                             value = editEmail,
-                            onValueChange = { userViewModel.userEmail.value = it },
+                            onValueChange = {
+                                userViewModel.userEmail.value = it
+                                if (emailError.isNotEmpty()) userViewModel.emailError.value = ""
+                            },
                             label = { Text("Email") },
                             singleLine = true,
+                            isError = emailError.isNotEmpty(),
+                            supportingText = { if (emailError.isNotEmpty()) Text(emailError) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp)
@@ -1215,23 +1403,28 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        // Password
                         OutlinedTextField(
                             value = editPassword,
-                            onValueChange = { userViewModel.userPassword.value = it },
+                            onValueChange = {
+                                userViewModel.userPassword.value = it
+                                if (passwordError.isNotEmpty()) userViewModel.passwordError.value = ""
+                            },
                             label = { Text("Password") },
                             singleLine = true,
+                            isError = passwordError.isNotEmpty(),
+                            supportingText = { if (passwordError.isNotEmpty()) Text(passwordError) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp),
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
-                                val icon =
-                                    if (passwordVisible) Icons.Default.Visibility
-                                    else Icons.Default.VisibilityOff
-
-                                IconButton(
-                                    onClick = { userViewModel.passwordVisible.value = !passwordVisible }
-                                ) {
+                                val icon = if (passwordVisible) Icons.Default.Visibility
+                                else Icons.Default.VisibilityOff
+                                IconButton(onClick = {
+                                    userViewModel.passwordVisible.value = !passwordVisible
+                                }) {
                                     Icon(imageVector = icon, contentDescription = "Toggle Password")
                                 }
                             }
@@ -1239,23 +1432,28 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
 
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        // Confirm Password
                         OutlinedTextField(
                             value = editConfirmPassword,
-                            onValueChange = { editConfirmPassword = it },
+                            onValueChange = {
+                                editConfirmPassword = it
+                                if (confirmPasswordError.isNotEmpty()) userViewModel.confirmPasswordError.value = ""
+                            },
                             label = { Text("Confirm Password") },
                             singleLine = true,
+                            isError = confirmPasswordError.isNotEmpty(),
+                            supportingText = { if (confirmPasswordError.isNotEmpty()) Text(confirmPasswordError) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp),
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
-                                val icon =
-                                    if (passwordVisible) Icons.Default.Visibility
-                                    else Icons.Default.VisibilityOff
-
-                                IconButton(
-                                    onClick = { userViewModel.passwordVisible.value = !passwordVisible }
-                                ) {
+                                val icon = if (passwordVisible) Icons.Default.Visibility
+                                else Icons.Default.VisibilityOff
+                                IconButton(onClick = {
+                                    userViewModel.passwordVisible.value = !passwordVisible
+                                }) {
                                     Icon(imageVector = icon, contentDescription = "Toggle Password")
                                 }
                             }
@@ -1269,7 +1467,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                         ) {
                             Button(
                                 onClick = {
-                                    if (editPassword == editConfirmPassword) {
+                                    if (validate()) {
                                         userViewModel.updateUser(
                                             User(
                                                 userId,
@@ -1283,7 +1481,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                     } else {
                                         Toast.makeText(
                                             context,
-                                            "Password and Conform Password are Not Same",
+                                            "Please enter valid details",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
