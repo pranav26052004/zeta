@@ -95,7 +95,6 @@ class RealtimeFirebaseHelper {
                 .addListenerForSingleValueEvent(object: ValueEventListener{
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if(snapshot.exists()){
-
                             for(child in snapshot.children){
                                 val item = child.getValue(clazz)
                                 onResult(item)
@@ -106,11 +105,9 @@ class RealtimeFirebaseHelper {
                             onResult(null)
                         }
                     }
-
                     override fun onCancelled(error: DatabaseError) {
                         onResult(null)
                     }
-
                 })
         }
 

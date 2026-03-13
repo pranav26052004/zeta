@@ -30,15 +30,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
@@ -53,10 +50,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -74,7 +68,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,7 +78,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.projectzeta.ViewModels.LiveNotesSharing
+import com.example.projectzeta.ViewModels.LiveNotesSharingViewModel
 import com.example.projectzeta.model.Notice
 import com.example.projectzeta.ViewModels.UserViewModel
 import com.example.projectzeta.model.Found
@@ -105,17 +98,15 @@ class MainActivity : ComponentActivity() {
 //                        name = "Android",
 //                        modifier = Modifier.padding(innerPadding)
 //                    )
-//                    parkingScreen()
-//                    HomeScreen()
-//                    SignUpScreen()
-//                    LostAndFoundScreen()
-//                    FindAllNotes()
-                   AppNavigation()
+//                    parkingScreen(viewModel(),rememberNavController())
+//                    HomeScreen(viewModel(),rememberNavController())
+//                   AboutPage(viewModel(),rememberNavController())
+//                    Login(viewModel(),rememberNavController())
+                    AppNavigation()
                 }
             }
         }
     }
-
 }
 
 @Composable
@@ -128,75 +119,161 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun parkingScreen(viewModel: ReservationViewModel = viewModel(),navController: NavController) {
-    val slots by viewModel.slots.collectAsState()
-    val currentUser = "Fuzail" //will be the current users username
 
-    Column(Modifier
-        .fillMaxSize()
-        .padding(20.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Column {
-            Text("Campus Connect Header here", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-        }
-        Column(Modifier.weight(1f)) {
-            LazyVerticalGrid(columns = GridCells.Fixed(4)) {
-                items(slots, key = {it.parkingId}){slot->
-                    var color = if(slot.available) Color.Green else Color.Red
-                    Column(
-                        Modifier
-                            .padding(8.dp)
-                            .height(65.dp)
-                            .background(color)
-                            .clickable {
-                                viewModel.reserveWithDb(slot, currentUser)
-                                if (slot.available) {
-                                    color = Color.Green
-                                } else {
-                                    color = Color.Red
+    val slots by viewModel.slots.collectAsState()
+    val userViewModel: UserViewModel = viewModel()
+    val currentUser = userViewModel.nameOfUser.collectAsState()
+
+    var footerindex by remember { mutableStateOf(0) }
+    val footerr: List<Int> = listOf(
+        R.drawable.baseline_home_24,
+        R.drawable.outline_feature_search_24,
+        R.drawable.baseline_local_parking_24,
+        R.drawable.outline_person_24
+    )
+    //will be the current users username
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Column {
+                Text("Parking Area", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            }
+            Column(Modifier.weight(1f)) {
+                LazyVerticalGrid(columns = GridCells.Fixed(4)) {
+                    items(slots, key = { it.parkingId }) { slot ->
+                        var color = if (slot.available) Color.Green else Color.Red
+                        Column(
+                            Modifier
+                                .padding(8.dp)
+                                .height(65.dp)
+                                .background(color)
+                                .clickable {
+                                    viewModel.reserveWithDb(slot, currentUser.value)
+                                    if (slot.available) {
+                                        color = Color.Green
+                                    } else {
+                                        color = Color.Red
+                                    }
+                                },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(Modifier.height(2.dp))
+                            Icon(
+                                painterResource(R.drawable.parking_icon),
+                                contentDescription = "ParkingIcon",
+                                Modifier.size(35.dp),
+                                tint = Color.Magenta
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text("Id: ${slot.parkingId}", color = Color.White)
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+            Column(
+                Modifier
+                    .height(250.dp)
+                    .padding(8.dp, 0.dp)
+            ) {
+                Text("Total Slots: ${slots.size}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                    Card(
+                        elevation = CardDefaults.cardElevation(10.dp),
+                        modifier = Modifier.padding(5.dp)
+                    ) {
+                        Column {
+                            Text(
+                                "Available Slots: ",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                            LazyColumn {
+                                items(slots.size) { it ->
+                                    if (slots[it].available)
+                                        Text(slots[it].parkingId.toString())
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.width(50.dp))
+                    Column {
+                        Card(
+                            elevation = CardDefaults.cardElevation(20.dp),
+                            modifier = Modifier.padding(5.dp)
+                        ) {
+                            Text("Reserved Slots: ", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            LazyColumn {
+                                items(slots.size) { it ->
+                                    if (!slots[it].available)
+                                        Text(slots[it].parkingId.toString())
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+            Column { Text("Footer Comes Here") }
+            Column() {
+                TabRow(
+                    selectedTabIndex = footerindex,
+                    divider = { HorizontalDivider() },
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(top = 130.dp)
+                        .fillMaxWidth()
+                        .size(100.dp)
+                        .drawBehind {
+                            val x = size.width / 2f
+                            drawLine(
+                                color = Color.Black,
+                                start = Offset(x, 0f),
+                                end = Offset(x, size.height),
+                                strokeWidth = 2.dp.toPx()
+                            )
+                        }
+                ) {
+                    footerr.forEachIndexed { index, icon ->
+                        Tab(
+                            selected = footerindex == index,
+                            onClick = {
+                                footerindex = index
+                                if (index == 0) {
+                                    Log.d("tag", "Clicking $index")
+                                    navController.navigate("homeScreen")
+                                }
+                                if (index == 1) {
+                                    Log.d("tag", "Clicking $index")
+                                    navController.navigate("lostAndFoundScreen")
+                                }
+                                if (index == 2) {
+                                    Log.d("tag", "Clicking $index")
+                                    navController.navigate("parkingScreen")
+                                }
+                                if (index == 3) {
+                                    Log.d("tag", "Clicking $index")
+                                    navController.navigate("aboutPage")
                                 }
                             },
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ){
-                        Spacer(Modifier.height(2.dp))
-                        Icon(painterResource(R.drawable.parking_icon), contentDescription = "ParkingIcon", Modifier.size(35.dp), tint = Color.Magenta)
-                        Spacer(Modifier.height(2.dp))
-                        Text("Id: ${slot.parkingId}", color = Color.White)
-                    }
-
-                }
-            }
-        }
-        Spacer(Modifier.height(18.dp))
-        Column(Modifier
-            .height(250.dp)
-            .padding(8.dp, 0.dp)) {
-            Text("Total Slots: ${slots.size}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                Column{
-                    Text("Available Slots: ", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    LazyColumn {
-                        items(slots.size){it->
-                            if(slots[it].available)
-                                Text(slots[it].parkingId.toString())
-                        }
-                    }
-                }
-                Spacer(Modifier.width(50.dp))
-                Column{
-                    Text("Reserved Slots: ", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    LazyColumn {
-                        items(slots.size){it->
-                            if(!slots[it].available)
-                                Text(slots[it].parkingId.toString())
-                        }
+                            icon = {
+                                Image(
+                                    painterResource(icon),
+                                    contentDescription = null
+                                )
+                            }
+                        )
                     }
                 }
             }
         }
-        Spacer(Modifier.height(18.dp))
-        Column { Text("Footer Comes Here") }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
@@ -206,7 +283,9 @@ fun GreetingPreview() {
 }
 
 @Composable
-fun HomeScreen(viewModels: LiveNotesSharing, navController: NavController) {
+fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavController) {
+    val userViewModel: UserViewModel=viewModel()
+    val userName by userViewModel.nameOfUser.collectAsState()
     var selectedtabindex by remember { mutableStateOf(0) }
     val footerr: List<Int> = listOf(
         R.drawable.baseline_home_24,
@@ -249,9 +328,22 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController: NavController) {
                             Tab(
                                 selected = footerindex == index,
                                 onClick = {
-                                    viewModels.footerindex.value = index
+                                    footerindex = index
+                                    if(index==0){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("homeScreen")
+                                    }
                                     if (index == 1) {
-                                        selectedtabindex = 0
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("lostAndFoundScreen")
+                                    }
+                                    if(index ==2){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("parkingScreen")
+                                    }
+                                    if(index==3){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("aboutPage")
                                     }
                                 },
                                 icon = {
@@ -299,7 +391,7 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController: NavController) {
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Hello, Janai Kasle!",
+                                text = "Hello ${userName}",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -416,7 +508,6 @@ fun HomeScreen(viewModels: LiveNotesSharing, navController: NavController) {
     }
 }
 
-
 @Composable
 fun LostAndFoundScreen(navController:NavController) {
 
@@ -432,7 +523,6 @@ fun LostAndFoundScreen(navController:NavController) {
     )
 
     var foundindex by remember { mutableStateOf(0) }
-
     var list2 = mutableListOf<Found>()
     list2.add(Found("Title 1", "Description 1", R.drawable.ic_launcher_background))
     list2.add(Found("Title 2", "Description 1", R.drawable.ic_launcher_background))
@@ -618,8 +708,21 @@ fun LostAndFoundScreen(navController:NavController) {
                     selected = footerindex == index,
                     onClick = {
                         footerindex = index
+                        if(index==0){
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("homeScreen")
+                        }
                         if (index == 1) {
-                            selectedtabindex = 0
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("lostAndFoundScreen")
+                        }
+                        if(index ==2){
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("parkingScreen")
+                        }
+                        if(index==3){
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("aboutPage")
                         }
                     },
                     icon = {
@@ -679,15 +782,17 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 tonalElevation = 4.dp,
                 shadowElevation = 8.dp,
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
             ) {
-                val userEmail by userViewModel.userEmail.collectAsState()
+                val userPhoneNumber by userViewModel.userPhoneNumber.collectAsState()
                 val userPassword by userViewModel.userPassword.collectAsState()
+                var loginUserPhone by remember { mutableStateOf("") }
+                var loginPassword by remember { mutableStateOf("") }
+                val context =LocalContext.current
 
                 Column(
                     modifier = Modifier
@@ -705,9 +810,9 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
                     )
 
                     OutlinedTextField(
-                        value = userEmail,
-                        onValueChange = { userViewModel.userEmail.value = it },
-                        label = { Text("Enter Username") },
+                        value = loginUserPhone,
+                        onValueChange = {loginUserPhone=it },
+                        label = { Text("Enter PhoneNumber") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -715,9 +820,9 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
                     Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
-                        value = userPassword,
+                        value = loginPassword,
                         // NOTE: fixed bug here — now updates the state
-                        onValueChange = { userViewModel.userPassword.value = it },
+                        onValueChange = { loginPassword = it },
                         label = { Text("Enter Password") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -739,10 +844,17 @@ fun Login(userViewModel: UserViewModel = viewModel(), navController: NavControll
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-
                     Button(
                         onClick = {
-                            navController.navigate("homeScreen")
+                            userViewModel.getUserandSetState(loginUserPhone)
+                            if((userPhoneNumber==loginUserPhone) && (userPassword==loginPassword)){
+                                Log.d("Tag","Login Successful")
+                                navController.navigate("homeScreen")
+                            }
+                            else{
+                                Log.d("Tag","Phone Number and PassWord dose not Match")
+                                Toast.makeText(context, "Phone Number and PassWord dose not Match", Toast.LENGTH_LONG).show()
+                            }
                         },
                         modifier = Modifier
                             .padding(top = 20.dp)
@@ -761,6 +873,7 @@ fun SignUpScreen(
     viewModel: UserViewModel = viewModel(),
     navController: NavController
 ) {
+    val userId by viewModel.userId.collectAsState()
     val name by viewModel.nameOfUser.collectAsState()
     val number by viewModel.userPhoneNumber.collectAsState()
     val email by viewModel.userEmail.collectAsState()
@@ -775,7 +888,6 @@ fun SignUpScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 tonalElevation = 4.dp,
@@ -789,16 +901,21 @@ fun SignUpScreen(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
                     Text(
                         text = "Create Account",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
-
                     Spacer(modifier = Modifier.height(24.dp))
-
+                    OutlinedTextField(
+                        value = userId,
+                        onValueChange = { viewModel.userId.value = it },
+                        label = { Text("userId") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                     OutlinedTextField(
                         value = name,
                         onValueChange = { viewModel.nameOfUser.value = it },
@@ -853,20 +970,28 @@ fun SignUpScreen(
 
                     Button(
                         onClick = {
-                            navController.navigate("login")
+                            var user = User(userId,name,number,email,password)
+                            Log.d("user", user.toString())
+                            viewModel.getUserandSetStateByuserId(user.userId)
+                            if(confirmPassword==password && name.length>8 && number.length==10){
+                                viewModel.createUserintable(user)
+                                Log.d("Tag","Created User with id $userId")
+                                navController.popBackStack()
+                            }
+                            else{
+                                Log.d("Tag","Enter Valid Details")
+                            }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Sign Up")
                     }
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     Text(
                         text = "Already have an account? Log In",
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable {
-                            navController.navigate("login")
+                            navController.popBackStack()
                         }
                     )
                 }
@@ -885,7 +1010,6 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
     }
 
     val userId by userViewModel.userId.collectAsState()
-    val saveable by userViewModel.savable.collectAsState()
     val editName by userViewModel.nameOfUser.collectAsState()
     val editEmail by userViewModel.userEmail.collectAsState()
     val editMobileNumber by userViewModel.userPhoneNumber.collectAsState()
@@ -938,8 +1062,21 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                 selected = footerindex == index,
                                 onClick = {
                                     footerindex = index
+                                    if(index==0){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("homeScreen")
+                                    }
                                     if (index == 1) {
-                                        selectedtabindex = 0
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("lostAndFoundScreen")
+                                    }
+                                    if(index ==2){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("parkingScreen")
+                                    }
+                                    if(index==3){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("aboutPage")
                                     }
                                 },
                                 icon = {
@@ -962,7 +1099,6 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                     .statusBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     tonalElevation = 2.dp,
@@ -980,22 +1116,26 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                         Image(
                             painter = painterResource(R.drawable.logout),
                             contentDescription = null,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(28.dp).clickable(
+                                true, onClick = {
+//                                    navController.navigate("login")
+                                }
+                            )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Logout",
-                            modifier = Modifier.clickable {
-                                Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
-                            },
+                            modifier = Modifier.clickable(true, onClick = {
+//                                navController.navigate("login")
+                            })
+                            ,
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // ===== Main Profile Surface (glass look) =====
                 Surface(
@@ -1017,16 +1157,15 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             modifier = Modifier.padding(bottom = 20.dp),
                             fontWeight = FontWeight.SemiBold
                         )
-
                         Image(
                             painter = painterResource(R.drawable.outline_person_24),
                             contentDescription = "Profile Image",
                             modifier = Modifier
-                                .size(120.dp)
+                                .size(100.dp)
                                 .clip(CircleShape)
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
                             "Edit Profile",
@@ -1038,7 +1177,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             fontWeight = FontWeight.Medium
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         OutlinedTextField(
                             value = editName,
@@ -1050,7 +1189,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                 .padding(horizontal = 4.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(5.dp))
 
                         OutlinedTextField(
                             value = editMobileNumber,
@@ -1062,7 +1201,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                                 .padding(horizontal = 4.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(5.dp))
 
                         OutlinedTextField(
                             value = editEmail,
@@ -1122,7 +1261,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             }
                         )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Row(
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 10.dp),
@@ -1154,7 +1293,10 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             }
 
                             Button(
-                                onClick = { },
+                                onClick = {
+                                    userViewModel.deleteUser()
+                                    navController.navigate("signupScreen")
+                                },
                                 modifier = Modifier.padding(start = 30.dp)
                             ) {
                                 Text("Delete Account")
@@ -1244,8 +1386,21 @@ fun UploadNotes(navController:NavController){
                         selected = footerindex == index,
                         onClick = {
                             footerindex = index
-                            if (index==1) {
-                                selectedtabindex = 0
+                            if(index==0){
+                                Log.d("tag","Clicking $index")
+                                navController.navigate("homeScreen")
+                            }
+                            if (index == 1) {
+                                Log.d("tag","Clicking $index")
+                                navController.navigate("lostAndFoundScreen")
+                            }
+                            if(index ==2){
+                                Log.d("tag","Clicking $index")
+                                navController.navigate("parkingScreen")
+                            }
+                            if(index==3){
+                                Log.d("tag","Clicking $index")
+                                navController.navigate("aboutPage")
                             }
                         },
                         icon = {
@@ -1328,8 +1483,21 @@ fun FindAllNotes(navController:NavController){
                     selected = footerindex == index,
                     onClick = {
                         footerindex = index
+                        if(index==0){
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("homeScreen")
+                        }
                         if (index == 1) {
-                            selectedtabindex = 0
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("lostAndFoundScreen")
+                        }
+                        if(index ==2){
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("parkingScreen")
+                        }
+                        if(index==3){
+                            Log.d("tag","Clicking $index")
+                            navController.navigate("aboutPage")
                         }
                     },
                     icon = {
@@ -1346,7 +1514,7 @@ fun FindAllNotes(navController:NavController){
 
 @Composable
 fun LiveNotesSharing(
-    viewModels: LiveNotesSharing,
+    viewModels: LiveNotesSharingViewModel,
     userViewModel: UserViewModel,
     navController: NavController
 ) {
@@ -1365,7 +1533,8 @@ fun LiveNotesSharing(
     val searchLiveText by viewModels.searchLiveText.collectAsState()
     val goLiveTitle by viewModels.goLiveTitle.collectAsState()
     val goLiveDescription by viewModels.goLiveDescription.collectAsState()
-    val liveId by viewModels.goLiveDescription.collectAsState()
+    val liveId by remember { mutableStateOf(userViewModel.userId.value) }
+
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -1403,8 +1572,21 @@ fun LiveNotesSharing(
                                 onClick = {
                                     // PRESERVE: your original behavior
                                     viewModels.footerindex.value = index
+                                    if(index==0){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("homeScreen")
+                                    }
                                     if (index == 1) {
-                                        selectedtabindex = 0
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("lostAndFoundScreen")
+                                    }
+                                    if(index ==2){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("parkingScreen")
+                                    }
+                                    if(index==3){
+                                        Log.d("tag","Clicking $index")
+                                        navController.navigate("aboutPage")
                                     }
                                 },
                                 icon = {
@@ -1573,7 +1755,7 @@ fun LiveNotesSharing(
                         Spacer(Modifier.height(12.dp))
 
                         // PRESERVE: your static text
-                        Text("userViewModel.userId.value")
+                        Text(liveId)
                     }
                 }
 

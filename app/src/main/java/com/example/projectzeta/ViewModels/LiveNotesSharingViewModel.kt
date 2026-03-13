@@ -6,7 +6,7 @@ import com.example.projectzeta.model.LiveNoteSharing
 import com.example.projectzeta.Repository.RealtimeFirebaseHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class LiveNotesSharing: ViewModel() {
+class LiveNotesSharingViewModel: ViewModel() {
     var footerindex =  MutableStateFlow<Int>(0)
     var selectedTab =  MutableStateFlow<Int>(0)
     var searchQuery =  MutableStateFlow("")

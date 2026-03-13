@@ -13,6 +13,7 @@ class ReservationViewModel : ViewModel(){
         loadSlots()
     }
 
+
 //    val tableName:String = "parkingSlots"
     fun loadSlots(){
         RealtimeFirebaseHelper.readList(

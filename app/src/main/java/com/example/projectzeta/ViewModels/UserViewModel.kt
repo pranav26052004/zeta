@@ -11,13 +11,15 @@ class UserViewModel: ViewModel()    {
 
     val userId = MutableStateFlow<String>("")
     val savable = MutableStateFlow(false)
-
     val nameOfUser = MutableStateFlow<String>("")
     val userPhoneNumber = MutableStateFlow("")
-
     val userEmail = MutableStateFlow<String>("")
-
     val userPassword = MutableStateFlow<String>("")
+
+
+    val loginUserPhone=MutableStateFlow<String>("")
+
+    val loginPassword =MutableStateFlow<String>("")
 
     val nameError = MutableStateFlow<String>("")
 
@@ -43,13 +45,37 @@ class UserViewModel: ViewModel()    {
                 userPhoneNumber.value = user.mobileNo
                 userPassword.value = user.password
             } else {
+                userPhoneNumber.value="invalid"
+                Log.d("TAG", "User is null!!!")
+            }
+        }
+    }
+    fun getUserandSetStateByuserId(value:String){
+        RealtimeFirebaseHelper.readItemUsingProperty(FirebaseDatabases.USER_TABLE, "userId", value, User::class.java){user->
+            if(user!=null){
+                Log.d("TAG", user.toString())
+                userId.value = user.userId
+                nameOfUser.value = user.fullName
+                userEmail.value = user.email
+                userPhoneNumber.value = user.mobileNo
+                userPassword.value = user.password
+            } else {
+                userPhoneNumber.value="invalid"
                 Log.d("TAG", "User is null!!!")
             }
         }
     }
 
+    fun createUserintable(user: User){
+        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.USER_TABLE,user.userId,user)
+    }
     fun updateUser(user:User){
         RealtimeFirebaseHelper.writeItem(FirebaseDatabases.USER_TABLE, user.userId, user)
     }
+
+    fun deleteUser(){
+        RealtimeFirebaseHelper.deleteItem(FirebaseDatabases.USER_TABLE,userId.value)
+    }
+
 
 }
