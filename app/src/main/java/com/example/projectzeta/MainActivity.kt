@@ -1118,7 +1118,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                             contentDescription = null,
                             modifier = Modifier.size(28.dp).clickable(
                                 true, onClick = {
-//                                    navController.navigate("login")
+                                    navController.navigate("login")
                                 }
                             )
                         )
@@ -1126,7 +1126,7 @@ fun AboutPage(userViewModel: UserViewModel = viewModel(), navController: NavCont
                         Text(
                             text = "Logout",
                             modifier = Modifier.clickable(true, onClick = {
-//                                navController.navigate("login")
+                                navController.navigate("login")
                             })
                             ,
                             color = MaterialTheme.colorScheme.primary,
