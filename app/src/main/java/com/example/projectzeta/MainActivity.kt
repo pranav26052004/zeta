@@ -88,6 +88,8 @@ import com.example.projectzeta.ViewModels.UserViewModel
 import com.example.projectzeta.model.Found
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.projectzeta.Model.User
+import com.example.projectzeta.ViewModels.FoundViewModel
+import com.example.projectzeta.ViewModels.LostViewModel
 import com.example.projectzeta.ViewModels.ReservationViewModel
 
 class MainActivity : ComponentActivity() {
@@ -513,234 +515,221 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
 }
 
 @Composable
-fun LostAndFoundScreen(navController:NavController) {
+fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, viewm: FoundViewModel) {
 
-    var search by remember { mutableStateOf("") }
-    var selectedtabindex by remember { mutableStateOf(0) }
-    val tabtitles = listOf("Lost", "Found")
-    var footerindex by remember { mutableStateOf(0) }
-    val footerr: List<Int> = listOf(
-        R.drawable.baseline_home_24,
-        R.drawable.outline_feature_search_24,
-        R.drawable.baseline_local_parking_24,
-        R.drawable.outline_person_24
-    )
+    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
 
-    var foundindex by remember { mutableStateOf(0) }
-    var list2 = mutableListOf<Found>()
-    list2.add(Found("Title 1", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 2", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 3", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 4", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 5", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 6", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 7", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 8", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 9", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 10", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 11", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 12", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 13", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 14", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 15", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 16", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 17", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 18", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 19", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 20", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 21", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 22", "Description 1", R.drawable.ic_launcher_background))
-    list2.add(Found("Title 23", "Description 1", R.drawable.ic_launcher_background))
-
-    var listt = mutableListOf<String>()
-    listt.add("Description 1")
-    listt.add("Description 2")
-    listt.add("Description 3")
-    listt.add("Description 4")
-    listt.add("Description 5")
-    listt.add("Description 6")
-    listt.add("Description 7")
-    listt.add("Description 8")
-    listt.add("Description 9")
-    listt.add("Description 10")
-    listt.add("Description 11")
-    listt.add("Description 12")
-    listt.add("Description 13")
-    listt.add("Description 14")
-    listt.add("Description 15")
-    listt.add("Description 16")
-    listt.add("Description 17")
-    listt.add("Description 18")
-    listt.add("Description 19")
-    listt.add("Description 20")
-    listt.add("Description 21")
-    listt.add("Description 22")
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-
-        TabRow(
-            selectedTabIndex = selectedtabindex,
-            divider = { HorizontalDivider() },
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .padding(top = 20.dp)
-                .fillMaxWidth()
-                .drawBehind {
-                    val x = size.width / 2f
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x, 0f),
-                        end = Offset(x, size.height),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                }
-        ) {
-            tabtitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedtabindex == index,
-                    onClick = { selectedtabindex = index },
-                    text = { Text(text = title) }
-                )
-            }
-        }
-
-        OutlinedTextField(
-            value = search,
-            onValueChange = { search = it },
-            Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp),
-            label = { Text("Search") },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search icon"
-                )
-            }
+        var search by remember { mutableStateOf("") }
+        var search2 by remember { mutableStateOf("") }
+        var selectedtabindex by remember { mutableStateOf(0) }
+        val tabtitles = listOf("Lost", "Found")
+        var footerindex by remember { mutableStateOf(0) }
+        var input1 by remember { mutableStateOf("") }
+        var input2 by remember { mutableStateOf("") }
+        var input3 by remember { mutableStateOf("") }
+        var input4 by remember { mutableStateOf("") }
+        val footerr: List<Int> = listOf(
+            R.drawable.baseline_home_24,
+            R.drawable.outline_feature_search_24,
+            R.drawable.baseline_local_parking_24,
+            R.drawable.outline_person_24
         )
-        Card(
-            modifier = Modifier
-                .weight(2f)
-                .fillMaxWidth()
-                .padding(top = 20.dp)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
+
+        var foundindex by remember { mutableStateOf(0) }
+        val lists by viewmodel.lists.collectAsState()
+        val listF by viewm.lists.collectAsState()
+        val count by viewmodel.count.collectAsState()
+        val count2 by viewm.count2.collectAsState()
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+
+            TabRow(
+                selectedTabIndex = selectedtabindex,
+                divider = { HorizontalDivider() },
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .fillMaxWidth()
+                    .drawBehind {
+                        val x = size.width / 2f
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(x, 0f),
+                            end = Offset(x, size.height),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
             ) {
-                when (selectedtabindex) {
-                    0 -> {
-                        items(listt) { item ->
-                            Text(item, modifier = Modifier.padding(vertical = 8.dp))
-                            HorizontalDivider()
-                        }
-                    }
-
-                    1 -> {
-                        items(
-                            items = list2,
-                            key = { it.hashCode() }
-                        ) { found ->
-                            val (foundTitle, foundDesc, foundImage) = found
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { foundindex = list2.indexOf(found) }
-                                    .padding(horizontal = 12.dp, vertical = 10.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = foundImage),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(Modifier.width(12.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(
-                                        text = foundTitle,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Text(
-                                        text = foundDesc,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                            HorizontalDivider()
-                        }
-                    }
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            IconButton(onClick = {}) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "")
-            }
-        }
-
-        TabRow(
-            selectedTabIndex = footerindex,
-            divider = { HorizontalDivider() },
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .padding(top = 130.dp)
-                .fillMaxWidth()
-                .size(100.dp)
-                .drawBehind {
-                    val x = size.width / 2f
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x, 0f),
-                        end = Offset(x, size.height),
-                        strokeWidth = 2.dp.toPx()
+                tabtitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedtabindex == index,
+                        onClick = { selectedtabindex = index },
+                        text = { Text(text = title) }
                     )
                 }
-        ) {
-            footerr.forEachIndexed { index, icon ->
-                Tab(
-                    selected = footerindex == index,
-                    onClick = {
-                        footerindex = index
-                        if(index==0){
-                            Log.d("tag","Clicking $index")
-                            navController.navigate("homeScreen")
-                        }
-                        if (index == 1) {
-                            Log.d("tag","Clicking $index")
-                            navController.navigate("lostAndFoundScreen")
-                        }
-                        if(index ==2){
-                            Log.d("tag","Clicking $index")
-                            navController.navigate("parkingScreen")
-                        }
-                        if(index==3){
-                            Log.d("tag","Clicking $index")
-                            navController.navigate("aboutPage")
-                        }
-                    },
-                    icon = {
-                        Image(
-                            painterResource(icon),
-                            contentDescription = null
+            }
+
+            if (selectedtabindex == 0) {
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp),
+                    label = { Text("Search") },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search icon",
+                            modifier = Modifier.clickable(true, onClick = {
+                                viewmodel.ReadLostByText(search)
+                            })
                         )
                     }
                 )
+
+                Card(
+                    modifier = Modifier
+                        .weight(2f)
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(Color(0x335B6DFA))
+                ) {
+                    Column {
+                        Text(lists.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text(lists.description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+
+                OutlinedTextField(value = input1, onValueChange = { input1 = it }, Modifier.padding(start = 65.dp))
+                OutlinedTextField(value = input2, onValueChange = { input2 = it }, Modifier.padding(start = 65.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(onClick = {
+                        viewmodel.count.value++
+                        viewmodel.WriteLostById(
+                            userViewModel = UserViewModel(),
+                            count,
+                            text = input1,
+                            description = input2
+                        )
+                    }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "")
+                    }
+                }
+            } else {
+                OutlinedTextField(
+                    value = search2,
+                    onValueChange = { search2 = it },
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp),
+                    label = { Text("Search") },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search icon",
+                            modifier = Modifier.clickable(true, onClick = {
+                                viewm.ReadFoundByText(search2)
+                            })
+                        )
+                    }
+                )
+
+                Card(
+                    modifier = Modifier
+                        .weight(2f)
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(Color(0x335B6DFA))
+                ) {
+                    Column {
+                        Text(listF.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text(listF.description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+
+                OutlinedTextField(value = input3, onValueChange = { input3 = it }, Modifier.padding(start = 65.dp))
+                OutlinedTextField(value = input4, onValueChange = { input4 = it }, Modifier.padding(start = 65.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(onClick = {
+
+                        // Keeping the same functionality as already added (no new methods)
+                        viewm.count2.value++
+                        viewm.WriteFoundById(UserViewModel(), viewm.count2.value, input3, input4)
+                    }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "")
+                    }
+                }
+            }
+
+            TabRow(
+                selectedTabIndex = footerindex,
+                divider = { HorizontalDivider() },
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(top = 130.dp)
+                    .fillMaxWidth()
+                    .size(100.dp)
+                    .drawBehind {
+                        val x = size.width / 2f
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(x, 0f),
+                            end = Offset(x, size.height),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
+            ) {
+                footerr.forEachIndexed { index, icon ->
+                    Tab(
+                        selected = footerindex == index,
+                        onClick = {
+                            footerindex = index
+                            if (index == 0) {
+                                Log.d("tag", "Clicking $index")
+                                navController.navigate("homeScreen")
+                            }
+                            if (index == 1) {
+                                Log.d("tag", "Clicking $index")
+                                navController.navigate("lostAndFoundScreen")
+                            }
+                            if (index == 2) {
+                                Log.d("tag", "Clicking $index")
+                                navController.navigate("parkingScreen")
+                            }
+                            if (index == 3) {
+                                Log.d("tag", "Clicking $index")
+                                navController.navigate("aboutPage")
+                            }
+                        },
+                        icon = {
+                            Image(
+                                painterResource(icon),
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
             }
         }
     }
 }
-
 @Composable
 fun RadialGlowBackground(
     modifier: Modifier = Modifier,
@@ -1982,7 +1971,7 @@ fun AppNavigation(){
             parkingScreen(viewModel(),navController)
         }
         composable("lostAndFoundScreen") {
-            LostAndFoundScreen(navController)
+            LostAndFoundScreen(navController,viewModel(),viewModel())
         }
         composable("aboutPage") {
             AboutPage(viewModel(),navController)
