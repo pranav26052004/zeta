@@ -82,7 +82,6 @@ class UserViewModel: ViewModel()    {
     fun validate(): Boolean {
         var ok = true
 
-        // Name
         val nameTrim = nameOfUser.value.trim()
         val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
         nameError.value = when {
@@ -91,7 +90,6 @@ class UserViewModel: ViewModel()    {
             else -> ""
         }
 
-        // Phone
         val digitsOnly = userPhoneNumber.value.filter { it.isDigit() }
         val phoneRegex = Regex("^[6-9]\\d{9}$")
         numberError.value = when {
@@ -101,7 +99,6 @@ class UserViewModel: ViewModel()    {
             else -> ""
         }
 
-        // Email
         val emailTrim = userEmail.value.trim()
         emailError.value = when {
             emailTrim.isEmpty() -> { ok = false; "Email is required" }
@@ -111,7 +108,6 @@ class UserViewModel: ViewModel()    {
             else -> ""
         }
 
-        // Password
         if (userPassword.value.isEmpty()) {
             passwordError.value = "Password is required"
             ok = false
@@ -129,7 +125,6 @@ class UserViewModel: ViewModel()    {
             } else ""
         }
 
-        // Confirm Password
         confirmPasswordError.value = when {
             confirmPassword.value.isEmpty() -> { ok = false; "Please confirm your password" }
             confirmPassword.value != userPassword.value -> { ok = false; "Passwords do not match" }

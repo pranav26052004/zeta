@@ -8,14 +8,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class LostViewModel: ViewModel() {
 
-     val count = MutableStateFlow(0)
-
+    val count = MutableStateFlow(0)
     val search = MutableStateFlow("")
     val selectedtabindex=MutableStateFlow(0)
     val footerindex= MutableStateFlow(0)
     val foundindex= MutableStateFlow(0)
-
     val lists=MutableStateFlow<Lost>(Lost("","","",""))
+
+    init {
+        fetchLastCount()
+    }
+
+    private fun fetchLastCount() {
+        RealtimeFirebaseHelper.readList(FirebaseDatabases.LOST_TABLE, Lost::class.java) { allLostItems ->
+            val maxId = allLostItems.mapNotNull { it.id.toIntOrNull() }.maxOrNull() ?: 0
+            count.value = maxId
+        }
+    }
+
     fun ReadLostByText(value: String){
         RealtimeFirebaseHelper.readItemUsingProperty(
             FirebaseDatabases.LOST_TABLE,"text",value ?: "Laptop", Lost::class.java){result->
@@ -29,8 +39,10 @@ class LostViewModel: ViewModel() {
         }
     }
 
-    fun WriteLostById(userViewModel: UserViewModel,count:Int,text: String,description: String){
-        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.LOST_TABLE,count.toString(),
-            Lost(description,count.toString(),userViewModel.nameOfUser.value,text))
+    fun WriteLostById(userViewModel: UserViewModel, text: String, description: String){
+        count.value++
+        val newId = count.value.toString()
+        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.LOST_TABLE, newId,
+            Lost(description, newId, userViewModel.nameOfUser.value, text))
     }
 }
