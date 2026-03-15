@@ -134,5 +134,24 @@ class UserViewModel: ViewModel()    {
         return ok
     }
 
+    fun validateLogin(loginUserPhone: String, loginPassword: String): Boolean {
+        var ok = true
+
+        val digitsOnly = loginUserPhone.filter { it.isDigit() }
+        val phoneRegex = Regex("^[6-9]\\d{9}$")
+        numberError.value = when {
+            digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
+            digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
+            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
+            else -> ""
+        }
+
+        passwordError.value = when {
+            loginPassword.isEmpty() -> { ok = false; "Password is required" }
+            else -> ""
+        }
+
+        return ok
+    }
 
 }

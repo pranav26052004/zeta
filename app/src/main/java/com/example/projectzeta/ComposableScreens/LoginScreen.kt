@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -50,6 +52,9 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
     userViewModel.getUserandSetState(session.getLoggedInUser())
 
     val passwordVisible by userViewModel.passwordVisible.collectAsState()
+
+    val numberError by userViewModel.numberError.collectAsState()
+    val passwordError by userViewModel.passwordError.collectAsState()
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -70,7 +75,6 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
                 var loginUserPhone by remember { mutableStateOf("") }
                 var loginPassword by remember { mutableStateOf("") }
                 val context =LocalContext.current
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -88,9 +92,15 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
 
                     OutlinedTextField(
                         value = loginUserPhone,
-                        onValueChange = {loginUserPhone=it },
+                        onValueChange = {
+                            loginUserPhone = it.filter { c -> c.isDigit() }
+                            if (numberError.isNotEmpty()) userViewModel.numberError.value = ""
+                        },
                         label = { Text("Enter Phone Number") },
                         singleLine = true,
+                        isError = numberError.isNotEmpty(),
+                        supportingText = { if (numberError.isNotEmpty()) Text(numberError) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -98,10 +108,16 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
 
                     OutlinedTextField(
                         value = loginPassword,
-                        onValueChange = { loginPassword = it },
+                        onValueChange = {
+                            loginPassword = it
+                            if (passwordError.isNotEmpty()) userViewModel.passwordError.value = ""
+                        },
                         label = { Text("Enter Password") },
                         singleLine = true,
+                        isError = passwordError.isNotEmpty(),
+                        supportingText = { if (passwordError.isNotEmpty()) Text(passwordError) },
                         modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             val icon = if (passwordVisible) Icons.Default.Visibility
@@ -133,18 +149,18 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
                     userViewModel.getUserandSetState(loginUserPhone)
                     Button(
                         onClick = {
-                            if((userPhoneNumber==loginUserPhone) && (userPassword==loginPassword)){
-                                Log.d("Tag","Login Successful")
-                                session.saveLogin(loginUserPhone)
-                                navController.navigate("homeScreen"){
-                                    popUpTo("login"){inclusive=true}
+                            if (userViewModel.validateLogin(loginUserPhone, loginPassword)) {
+                                if ((userPhoneNumber == loginUserPhone) && (userPassword == loginPassword)) {
+                                    Log.d("Tag", "Login Successful")
+                                    Toast.makeText(context, "Login Successful!", Toast.LENGTH_LONG).show()
+                                    session.saveLogin(loginUserPhone)
+                                    navController.navigate("homeScreen") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Phone Number and Password does not match!", Toast.LENGTH_LONG).show()
                                 }
                             }
-                            else{
-                                Log.d("Tag","Phone Number and Password does not match!")
-                                Toast.makeText(context, "Phone Number and Password does not match!", Toast.LENGTH_LONG).show()
-                            }
-
                         },
                         modifier = Modifier
                             .padding(top = 20.dp)

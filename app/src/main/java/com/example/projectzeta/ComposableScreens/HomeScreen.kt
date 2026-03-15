@@ -202,7 +202,7 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
                         Spacer(modifier = Modifier.height(16.dp))
 
                         val notices = listOf(
-                            Notice("New Resource", "Deep Learning notes uploaded by Jane Smith"),
+                            Notice("Live Note Sharing", "Deep Learning notes uploaded by Jane Smith"),
                             Notice("Lost Item", "Blue backpack found in the cafeteria. Contact security."),
                             Notice("Parking Finder", "Available slots: P1-10, P2-5, P3-12")
                         )
@@ -252,22 +252,22 @@ fun HomeScreen(viewModels: LiveNotesSharingViewModel, navController: NavControll
                         }
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Button(
-                            onClick = { navController.navigate("uploadNotes") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Text("Upload Notes")
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = { navController.navigate("findAllNotes") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Text("Find Notes")
-                        }
+//                        Button(
+//                            onClick = { navController.navigate("uploadNotes") },
+//                            modifier = Modifier.fillMaxWidth(),
+//                            shape = RoundedCornerShape(14.dp)
+//                        ) {
+//                            Text("Upload Notes")
+//                        }
+//                        Spacer(modifier = Modifier.height(16.dp))
+//
+//                        Button(
+//                            onClick = { navController.navigate("findAllNotes") },
+//                            modifier = Modifier.fillMaxWidth(),
+//                            shape = RoundedCornerShape(14.dp)
+//                        ) {
+//                            Text("Find Notes")
+//                        }
                     }
                 }
 
