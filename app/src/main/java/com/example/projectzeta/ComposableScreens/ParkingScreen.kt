@@ -56,163 +56,6 @@ import com.example.projectzeta.SessionManager
 import com.example.projectzeta.ViewModels.ReservationViewModel
 import com.example.projectzeta.ViewModels.UserViewModel
 
-
-//@Composable
-//fun ParkingScreen(viewModel: ReservationViewModel = viewModel(), navController: NavController) {
-//
-//    val slots by viewModel.slots.collectAsState()
-//    val userViewModel: UserViewModel = viewModel()
-//    val session = SessionManager(LocalContext.current)
-//    userViewModel.getUserandSetState(session.getLoggedInUser())
-//
-//    var footerindex by remember { mutableStateOf(0) }
-//    val footerr: List<Int> = listOf(
-//        R.drawable.baseline_home_24,
-//        R.drawable.outline_feature_search_24,
-//        R.drawable.baseline_local_parking_24,
-//        R.drawable.outline_person_24
-//    )
-//    RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
-//        Column(
-//            Modifier
-//                .fillMaxSize(),
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            Column {
-//                Text("Parking Area", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-//            }
-//            Column(Modifier.weight(1f)) {
-//                LazyVerticalGrid(columns = GridCells.Fixed(4)) {
-//                    items(slots, key = { it.parkingId }) { slot ->
-//                        var color = if (slot.available) Color.Green else Color.Red
-//                        Column(
-//                            Modifier
-//                                .padding(8.dp)
-//                                .height(65.dp)
-//                                .background(color)
-//                                .clickable {
-//                                    viewModel.reserveWithDb(slot, userViewModel.nameOfUser.value)
-//                                    if (slot.available) {
-//                                        color = Color.Green
-//                                    } else {
-//                                        color = Color.Red
-//                                    }
-//                                },
-//                            horizontalAlignment = Alignment.CenterHorizontally
-//                        ) {
-//                            Spacer(Modifier.height(2.dp))
-//                            Icon(
-//                                painterResource(R.drawable.parking_icon),
-//                                contentDescription = "ParkingIcon",
-//                                Modifier.size(35.dp),
-//                                tint = Color.Magenta
-//                            )
-//                            Spacer(Modifier.height(2.dp))
-//                            Text("Slot: ${slot.parkingId}", color = Color.White)
-//                        }
-//                    }
-//                }
-//            }
-//            Spacer(Modifier.height(18.dp))
-//            Column(
-//                Modifier
-//                    .height(250.dp)
-//                    .padding(8.dp, 0.dp)
-//            ) {
-//                Text("Total Slots: ${slots.size}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-//                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-//                    Card(
-//                        elevation = CardDefaults.cardElevation(10.dp),
-//                        modifier = Modifier.padding(5.dp)
-//                    ) {
-//                        Column {
-//                            Text(
-//                                "Available Slots: ",
-//                                fontWeight = FontWeight.Bold,
-//                                fontSize = 18.sp
-//                            )
-//                            LazyColumn {
-//                                items(slots.size) { it ->
-//                                    if (slots[it].available)
-//                                        Text(slots[it].parkingId.toString())
-//                                }
-//                            }
-//                        }
-//                    }
-//                    Spacer(Modifier.width(50.dp))
-//                    Column {
-//                        Card(
-//                            elevation = CardDefaults.cardElevation(20.dp),
-//                            modifier = Modifier.padding(5.dp)
-//                        ) {
-//                            Text("Reserved Slots: ", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-//                            LazyColumn {
-//                                items(slots.size) { it ->
-//                                    if (!slots[it].available)
-//                                        Text(slots[it].parkingId.toString())
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            Spacer(Modifier.height(18.dp))
-//            Column() {
-//                TabRow(
-//                    selectedTabIndex = footerindex,
-//                    divider = { HorizontalDivider() },
-//                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                    modifier = Modifier
-//                        .padding(top = 130.dp)
-//                        .fillMaxWidth()
-//                        .size(100.dp)
-//                        .drawBehind {
-//                            val x = size.width / 2f
-//                            drawLine(
-//                                color = Color.Black,
-//                                start = Offset(x, 0f),
-//                                end = Offset(x, size.height),
-//                                strokeWidth = 2.dp.toPx()
-//                            )
-//                        }
-//                ) {
-//                    footerr.forEachIndexed { index, icon ->
-//                        Tab(
-//                            selected = footerindex == index,
-//                            onClick = {
-//                                footerindex = index
-//                                if (index == 0) {
-//                                    Log.d("tag", "Clicking $index")
-//                                    navController.navigate("homeScreen")
-//                                }
-//                                if (index == 1) {
-//                                    Log.d("tag", "Clicking $index")
-//                                    navController.navigate("lostAndFoundScreen")
-//                                }
-//                                if (index == 2) {
-//                                    Log.d("tag", "Clicking $index")
-//                                    navController.navigate("parkingScreen")
-//                                }
-//                                if (index == 3) {
-//                                    Log.d("tag", "Clicking $index")
-//                                    navController.navigate("aboutPage")
-//                                }
-//                            },
-//                            icon = {
-//                                Image(
-//                                    painterResource(icon),
-//                                    contentDescription = null
-//                                )
-//                            }
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-
 @Composable
 fun ParkingScreen(viewModel: ReservationViewModel = viewModel(), navController: NavController) {
 
@@ -230,10 +73,7 @@ fun ParkingScreen(viewModel: ReservationViewModel = viewModel(), navController: 
     )
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
-        // Main container to hold content and bottom bar
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // 1. CONTENT AREA (Takes up all space except the bottom bar)
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -242,7 +82,7 @@ fun ParkingScreen(viewModel: ReservationViewModel = viewModel(), navController: 
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(Modifier.height(40.dp)) // Padding for status bar
+                Spacer(Modifier.height(40.dp))
                 Text("Parking Area", fontWeight = FontWeight.Bold, fontSize = 24.sp)
 
                 Column(Modifier.weight(1f)) {
@@ -320,8 +160,6 @@ fun ParkingScreen(viewModel: ReservationViewModel = viewModel(), navController: 
                 }
                 Spacer(Modifier.height(18.dp))
             }
-
-            // 2. NAVIGATION BAR (Stays at the bottom)
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
                 tonalElevation = 8.dp
