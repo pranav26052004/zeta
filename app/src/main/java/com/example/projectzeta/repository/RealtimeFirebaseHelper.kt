@@ -1,5 +1,6 @@
 package com.example.projectzeta.Repository
 
+import android.util.Log
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -34,6 +35,36 @@ class RealtimeFirebaseHelper {
                 }
 
             })
+        }
+
+        fun <T> readListByText(
+            tableName: String,
+            property: String,
+            value: String,
+            clazz: Class<T>,
+            onData: (MutableList<T>) -> Unit
+        ){
+            database.child(tableName)
+                .orderByChild(property)
+                .equalTo(value)
+                .addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val genericList = mutableListOf<T>()
+
+                        for (child in snapshot.children) {
+                            val item = child.getValue(clazz)
+                            if (item != null) {
+                                genericList.add(item)
+
+                            }
+                        }
+                        onData(genericList)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d("TAG", "Error: Database fetch error, Message: ${error.message}")
+                    }
+                })
         }
 
         fun writeItem(

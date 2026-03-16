@@ -13,7 +13,7 @@ class LostViewModel: ViewModel() {
     val selectedtabindex=MutableStateFlow(0)
     val footerindex= MutableStateFlow(0)
     val foundindex= MutableStateFlow(0)
-    val lists=MutableStateFlow<Lost>(Lost("","","",""))
+    val lists=MutableStateFlow<MutableList<Lost>>(mutableListOf(Lost("", "", "")))//Lost("","","",""))
 
     init {
         fetchLastCount()
@@ -27,7 +27,7 @@ class LostViewModel: ViewModel() {
     }
 
     fun ReadLostByText(value: String){
-        RealtimeFirebaseHelper.readItemUsingProperty(
+        RealtimeFirebaseHelper.readListByText(
             FirebaseDatabases.LOST_TABLE,"text",value ?: "Laptop", Lost::class.java){result->
             if (result!=null){
                 println(result.toString())

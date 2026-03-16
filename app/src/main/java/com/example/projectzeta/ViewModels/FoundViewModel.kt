@@ -1,5 +1,6 @@
 package com.example.projectzeta.ViewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.projectzeta.Repository.RealtimeFirebaseHelper
 import com.example.projectzeta.constants.FirebaseDatabases
@@ -13,7 +14,7 @@ class FoundViewModel: ViewModel() {
     val selectedtabindex=MutableStateFlow(0)
     val footerindex= MutableStateFlow(0)
     val foundindex= MutableStateFlow(0)
-    val lists=MutableStateFlow<Found>(Found("","","",""))
+    val lists=MutableStateFlow<MutableList<Found>>(mutableListOf(Found("", "", "")))
 
     init {
         fetchLastCount()
@@ -27,7 +28,7 @@ class FoundViewModel: ViewModel() {
     }
 
     fun ReadFoundByText(value: String){
-        RealtimeFirebaseHelper.readItemUsingProperty(
+        RealtimeFirebaseHelper.readListByText(
             FirebaseDatabases.FOUND_TABLE,"text",value, Found::class.java){ result->
             if (result!=null){
                 println(result.toString())
@@ -42,7 +43,9 @@ class FoundViewModel: ViewModel() {
     fun WriteFoundById(userViewModel: UserViewModel, text: String, description: String){
         count2.value++
         val newId = count2.value.toString()
+        val foundItem = Found(description = description, foundByUser = userViewModel.nameOfUser.value, id = newId, text = text)
+        Log.d("FoundItem", foundItem.toString())
         RealtimeFirebaseHelper.writeItem(FirebaseDatabases.FOUND_TABLE, newId,
-            Found(description, userViewModel.nameOfUser.value, newId, text))
+            foundItem)
     }
 }

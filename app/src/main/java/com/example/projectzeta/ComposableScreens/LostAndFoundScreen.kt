@@ -6,10 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
@@ -24,6 +27,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,13 +50,17 @@ import com.example.projectzeta.SessionManager
 import com.example.projectzeta.ViewModels.FoundViewModel
 import com.example.projectzeta.ViewModels.LostViewModel
 import com.example.projectzeta.ViewModels.UserViewModel
+import com.example.projectzeta.model.Found
+import com.example.projectzeta.model.Lost
 
 @Composable
 fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, viewm: FoundViewModel) {
 
     val userViewModel: UserViewModel = viewModel()
     val session = SessionManager(LocalContext.current)
-    userViewModel.getUserandSetState(session.getLoggedInUser())
+    LaunchedEffect(Unit) {
+        userViewModel.getUserandSetState(session.getLoggedInUser())
+    }
 
     RadialGlowBackground(modifier = Modifier.fillMaxSize()) {
 
@@ -133,10 +141,14 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     colors = CardDefaults.cardColors(Color(0x335B6DFA))
                 ) {
-                    Column {
-                        Text("Lost Item: "+lists.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Details: "+lists.description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Lost By: "+lists.lostByUser, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    LazyColumn {
+                        items(lists.size){it->
+                            Text("Lost Item: "+lists[it].text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Details: "+lists[it].description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Lost By: "+lists[it].lostByUser, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("-------------------------------")
+                            Spacer(Modifier.height(12.dp))
+                        }
                     }
                 }
 
@@ -161,8 +173,7 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                         Icon(imageVector = Icons.Default.Add, contentDescription = "")
                     }
                 }
-            }
-            else {
+            } else {
                 OutlinedTextField(
                     value = search2,
                     onValueChange = { search2 = it },
@@ -189,10 +200,14 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     colors = CardDefaults.cardColors(Color(0x335B6DFA))
                 ) {
-                    Column {
-                        Text("Found Item: "+listF.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Details: "+listF.description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Found By: "+listF.foundbyuser, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    LazyColumn {
+                        items(listF.size){it->
+                            Text("Found Item: "+listF[it].text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Details: "+listF[it].description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Found By: "+listF[it].foundByUser, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text("----------------------------")
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
 
@@ -208,7 +223,7 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                 ) {
                     IconButton(onClick = {
                         viewm.count2.value++
-                        viewm.WriteFoundById(UserViewModel(), input3, input4)
+                        viewm.WriteFoundById(userViewModel, input3, input4)
 
                     }) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = "")
