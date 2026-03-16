@@ -2,9 +2,8 @@ package com.example.projectzeta.ViewModels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.projectzeta.constants.FirebaseDatabases
 import com.example.projectzeta.Model.User
-import com.example.projectzeta.Repository.RealtimeFirebaseHelper
+import com.example.projectzeta.repository.MainRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class UserViewModel: ViewModel()    {
@@ -39,8 +38,7 @@ class UserViewModel: ViewModel()    {
 
 
     fun getUserandSetState(value:String?){
-        RealtimeFirebaseHelper.readItemUsingProperty(FirebaseDatabases.USER_TABLE, "mobileNo",
-            value ?: "412345", User::class.java){ user->
+        MainRepository.getUser(value ?: "412345") { user ->
             if(user!=null){
                 Log.d("TAG", user.toString())
                 userId.value = user.userId
@@ -55,7 +53,7 @@ class UserViewModel: ViewModel()    {
         }
     }
     fun getUserandSetStateByuserId(value:String){
-        RealtimeFirebaseHelper.readItemUsingProperty(FirebaseDatabases.USER_TABLE, "userId", value, User::class.java){user->
+        MainRepository.getUserByUserId(value) { user ->
             if(user!=null){
                 Log.d("TAG", user.toString())
                 userId.value = user.userId
@@ -71,14 +69,14 @@ class UserViewModel: ViewModel()    {
     }
 
     fun createUserintable(user: User){
-        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.USER_TABLE,user.userId,user)
+        MainRepository.saveUser(user)
     }
     fun updateUser(user:User){
-        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.USER_TABLE, user.userId, user)
+        MainRepository.saveUser(user)
     }
 
     fun deleteUser(){
-        RealtimeFirebaseHelper.deleteItem(FirebaseDatabases.USER_TABLE,userId.value)
+        MainRepository.deleteUser(userId.value)
     }
 
     fun validate(): Boolean {
@@ -146,21 +144,23 @@ class UserViewModel: ViewModel()    {
         return ok
     }
 
-    fun validateLogin(loginUserPhone: String, loginPassword: String): Boolean {
+    fun validateLogin(phone: String, pass: String): Boolean {
         var ok = true
 
-        val digitsOnly = loginUserPhone.filter { it.isDigit() }
+        val digitsOnly = phone.filter { it.isDigit() }
         val phoneRegex = Regex("^[6-9]\\d{9}$")
         numberError.value = when {
             digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
             digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
-            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format (must start with 6-9)" }
+            !phoneRegex.matches(digitsOnly) -> { ok = false; "Invalid mobile format" }
             else -> ""
         }
 
-        passwordError.value = when {
-            loginPassword.isEmpty() -> { ok = false; "Password is required" }
-            else -> ""
+        passwordError.value = if (pass.isEmpty()) {
+            ok = false
+            "Password is required"
+        } else {
+            ""
         }
 
         return ok

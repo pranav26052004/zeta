@@ -1,9 +1,8 @@
 package com.example.projectzeta.ViewModels
 
 import androidx.lifecycle.ViewModel
-import com.example.projectzeta.constants.FirebaseDatabases
 import com.example.projectzeta.model.LiveNoteSharing
-import com.example.projectzeta.Repository.RealtimeFirebaseHelper
+import com.example.projectzeta.repository.MainRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class LiveNotesSharingViewModel: ViewModel() {
@@ -18,9 +17,7 @@ class LiveNotesSharingViewModel: ViewModel() {
     var selectedtabindex = MutableStateFlow(0)
 
     fun serachIdinLiveShare(value:String){
-        RealtimeFirebaseHelper.readItemUsingProperty(
-            FirebaseDatabases.LIVE_NOTESHARING,"id",value,
-            LiveNoteSharing::class.java){ notesSharing ->
+        MainRepository.getLiveNoteById(value) { notesSharing ->
             if(notesSharing!=null){
                 searchTitle.value= notesSharing.title
                 searchLiveText.value=notesSharing.description
@@ -33,11 +30,7 @@ class LiveNotesSharingViewModel: ViewModel() {
 
     fun startLiveObservation(value: String) {
         if (value.isEmpty()) return
-
-        RealtimeFirebaseHelper.observeItemUsingProperty(
-            FirebaseDatabases.LIVE_NOTESHARING, "id", value,
-            LiveNoteSharing::class.java
-        ) { notesSharing ->
+        MainRepository.observeLiveNoteById(value) { notesSharing ->
             if (notesSharing != null) {
                 searchTitle.value = notesSharing.title
                 searchLiveText.value = notesSharing.description
@@ -46,7 +39,6 @@ class LiveNotesSharingViewModel: ViewModel() {
     }
 
     fun liveNotesSharing(userViewModel: UserViewModel, title: String, desc:String){
-        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.LIVE_NOTESHARING,userViewModel.userId.value,
-            LiveNoteSharing(userViewModel.userId.value,title,desc))
+        MainRepository.writeLiveNote(userViewModel.userId.value, LiveNoteSharing(userViewModel.userId.value, title, desc))
     }
 }

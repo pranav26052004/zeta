@@ -1,9 +1,8 @@
 package com.example.projectzeta.ViewModels
 
 import androidx.lifecycle.ViewModel
-import com.example.projectzeta.Repository.RealtimeFirebaseHelper
-import com.example.projectzeta.constants.FirebaseDatabases
 import com.example.projectzeta.model.Lost
+import com.example.projectzeta.repository.MainRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class LostViewModel: ViewModel() {
@@ -13,22 +12,21 @@ class LostViewModel: ViewModel() {
     val selectedtabindex=MutableStateFlow(0)
     val footerindex= MutableStateFlow(0)
     val foundindex= MutableStateFlow(0)
-    val lists=MutableStateFlow<MutableList<Lost>>(mutableListOf(Lost("", "", "")))//Lost("","","",""))
+    val lists=MutableStateFlow<MutableList<Lost>>(mutableListOf())
 
     init {
         fetchLastCount()
     }
 
     private fun fetchLastCount() {
-        RealtimeFirebaseHelper.readList(FirebaseDatabases.LOST_TABLE, Lost::class.java) { allLostItems ->
+        MainRepository.getAllLost { allLostItems ->
             val maxId = allLostItems.mapNotNull { it.id.toIntOrNull() }.maxOrNull() ?: 0
             count.value = maxId
         }
     }
 
     fun ReadLostByText(value: String){
-        RealtimeFirebaseHelper.readListByText(
-            FirebaseDatabases.LOST_TABLE,"text",value ?: "Laptop", Lost::class.java){result->
+        MainRepository.getLostByText(value ?: "Laptop") { result ->
             if (result!=null){
                 println(result.toString())
                 lists.value=result
@@ -42,7 +40,6 @@ class LostViewModel: ViewModel() {
     fun WriteLostById(userViewModel: UserViewModel, text: String, description: String){
         count.value++
         val newId = count.value.toString()
-        RealtimeFirebaseHelper.writeItem(FirebaseDatabases.LOST_TABLE, newId,
-            Lost(description, newId, userViewModel.nameOfUser.value, text))
+        MainRepository.writeLost(newId, Lost(description, newId, userViewModel.nameOfUser.value, text))
     }
 }
