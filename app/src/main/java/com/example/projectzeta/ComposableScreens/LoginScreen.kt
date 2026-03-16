@@ -132,7 +132,7 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
 
                     Row(Modifier.padding(top = 20.dp)) {
                         Text(
-                            "Sign Up",
+                            "Don't have an account? Sign Up",
                             Modifier
                                 .padding(start = 15.dp)
                                 .clickable(onClick = {
@@ -140,11 +140,11 @@ fun LoginScreen(userViewModel: UserViewModel = viewModel(), navController: NavCo
                                 }),
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Text(
-                            "Forgot Password",
-                            Modifier.padding(start = 40.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+//                        Text(
+//                            "Forgot Password",
+//                            Modifier.padding(start = 40.dp),
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
                     }
                     userViewModel.getUserandSetState(loginUserPhone)
                     Button(

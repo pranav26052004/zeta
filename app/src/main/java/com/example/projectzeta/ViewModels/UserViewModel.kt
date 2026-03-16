@@ -21,6 +21,8 @@ class UserViewModel: ViewModel()    {
 
     val loginPassword =MutableStateFlow<String>("")
 
+    val userIdError = MutableStateFlow<String>("")
+
     val nameError = MutableStateFlow<String>("")
 
     val numberError = MutableStateFlow<String>("")
@@ -82,8 +84,18 @@ class UserViewModel: ViewModel()    {
     fun validate(): Boolean {
         var ok = true
 
+        // User ID validation
+        val userIdTrim = userId.value.trim()
+        val userIdRegex = Regex("^\\d+$") // Digits only regex
+        userIdError.value = when {
+            userIdTrim.isEmpty() -> { ok = false; "User ID is required" }
+            userIdTrim.length < 3 -> { ok = false; "User ID must be at least 3 characters" }
+            !userIdRegex.matches(userIdTrim) -> { ok = false; "User ID must contain only digits" }
+            else -> ""
+        }
+
         val nameTrim = nameOfUser.value.trim()
-        val nameRegex = Regex("^[A-Za-z][A-Za-z\\s''-]{1,49}$")
+        val nameRegex = Regex("^[A-Za-z][A-Za-z\\\\s\\'\\-]{1,49}\$")
         nameError.value = when {
             nameTrim.isEmpty() -> { ok = false; "Name is required" }
             !nameRegex.matches(nameTrim) -> { ok = false; "Use 2–50 letters; spaces, apostrophes, hyphens allowed" }
@@ -91,7 +103,7 @@ class UserViewModel: ViewModel()    {
         }
 
         val digitsOnly = userPhoneNumber.value.filter { it.isDigit() }
-        val phoneRegex = Regex("^[6-9]\\d{9}$")
+        val phoneRegex = Regex("^[6-9]\\d{9}\$")
         numberError.value = when {
             digitsOnly.isEmpty() -> { ok = false; "Phone number is required" }
             digitsOnly.length != 10 -> { ok = false; "Must be exactly 10 digits" }
@@ -153,5 +165,4 @@ class UserViewModel: ViewModel()    {
 
         return ok
     }
-
 }

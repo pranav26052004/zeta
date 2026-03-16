@@ -55,6 +55,7 @@ fun SignUpScreen(
     val passwordVisible by viewModel.passwordVisible.collectAsState()
     val confirmPasswordVisible by viewModel.confirmPasswordVisible.collectAsState()
 
+    val userIdError by viewModel.userIdError.collectAsState() // Collected userIdError
     val nameError by viewModel.nameError.collectAsState()
     val numberError by viewModel.numberError.collectAsState()
     val emailError by viewModel.emailError.collectAsState()
@@ -91,9 +92,14 @@ fun SignUpScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     OutlinedTextField(
                         value = userId,
-                        onValueChange = { viewModel.userId.value = it },
-                        label = { Text("userId") },
+                        onValueChange = {
+                            viewModel.userId.value = it
+                            if (userIdError.isNotEmpty()) viewModel.userIdError.value = "" // Clear error on change
+                        },
+                        label = { Text("UserId") },
                         singleLine = true,
+                        isError = userIdError.isNotEmpty(), // Display error if present
+                        supportingText = { if (userIdError.isNotEmpty()) Text(userIdError) }, // Show error message
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(24.dp))
@@ -201,7 +207,7 @@ fun SignUpScreen(
                             if (viewModel.validate()) {
                                 val user = User(userId, name, number, email, password)
                                 Log.d("user", user.toString())
-                                viewModel.getUserandSetStateByuserId(user.userId)
+                                viewModel.getUserandSetStateByuserId(user.userId) // if user already exists, then it sets that user as the current user
                                 viewModel.createUserintable(user)
                                 Log.d("Tag", "Created User with id $userId")
                                 Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT).show()
