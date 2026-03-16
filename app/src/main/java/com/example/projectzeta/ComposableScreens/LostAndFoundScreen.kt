@@ -161,7 +161,8 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                         Icon(imageVector = Icons.Default.Add, contentDescription = "")
                     }
                 }
-            } else {
+            }
+            else {
                 OutlinedTextField(
                     value = search2,
                     onValueChange = { search2 = it },
@@ -189,9 +190,9 @@ fun LostAndFoundScreen(navController: NavController, viewmodel: LostViewModel, v
                     colors = CardDefaults.cardColors(Color(0x335B6DFA))
                 ) {
                     Column {
-                        Text("Found Item: "+lists.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Details: "+lists.description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Found By: "+lists.lostByUser, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Found Item: "+listF.text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Details: "+listF.description, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Found By: "+listF.foundbyuser, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
